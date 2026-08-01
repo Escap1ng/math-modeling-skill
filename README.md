@@ -1,5 +1,7 @@
 # Math Modeling Helper
 
+<p align="center"><b>🌐 Language:</b> <a href="./README.en.md">English</a> | 中文</p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/版本-v1.0.1-2196F3" alt="版本">
   <img src="https://img.shields.io/badge/许可证-MIT-4CAF50" alt="许可证">
