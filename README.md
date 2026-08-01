@@ -1,12 +1,39 @@
 # Math Modeling Helper
 
+<p align="center">
+  <img src="https://img.shields.io/badge/版本-v1.0.1-2196F3" alt="版本">
+  <img src="https://img.shields.io/badge/许可证-MIT-4CAF50" alt="许可证">
+  <img src="https://img.shields.io/badge/赛事-CUMCM-FF5722" alt="赛事">
+  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/LaTeX-xelatex-008080?logo=latex&logoColor=white" alt="LaTeX">
+  <img src="https://img.shields.io/badge/状态-活跃-success" alt="状态">
+</p>
+
 > 数学建模竞赛全流程 AI 辅助技能 —— 从赛题分析到论文生成，一站式解决。
 
 覆盖**赛题理解 → 模型构建 → 算法实现 → 论文输出 → 质量自评**完整链路，专为**高教社杯全国大学生数学建模竞赛（CUMCM）**设计，同时适用于其他数学建模赛事。推荐使用多模态AI模型。
 
-> <sub>**版本：** v1.0.1</sub>
->
 > <sub>**免责声明：** 本工具生成的所有内容仅供学习参考，使用者须自行核实准确性并确保符合赛事学术诚信要求。排版格式以官方为准。</sub>
+
+## 🚀 Quick Start
+
+只需三步，快速体验：
+
+```
+1️⃣ 上传赛题文件（PDF/Excel/文本）或粘贴赛题内容
+         ↓
+2️⃣ 技能自动完成：赛题分析 → 算法选择 → 代码实现 → 论文生成
+         ↓
+3️⃣ 获取完整的项目目录：code/（代码）+ figures/（图表）+ paper/（论文 PDF + Word）
+```
+
+**示例输出结构：**
+```
+第X题_赛题简称/
+├── code/          # Python 代码（按问题编号：q1_*.py, q2_*.py）
+├── figures/       # 可视化图表（fig1.png, fig2.png，≥300 DPI）
+└── paper/         # 论文（paper.tex + paper.pdf + paper.docx）
+```
 
 ## ✨ 核心能力
 
@@ -45,14 +72,7 @@
 
 1. 上传赛题文本（PDF/Excel/文本）或粘贴赛题内容
 2. 技能自动进入六阶段工作流
-3. 输出完整的项目目录结构：
-
-```
-第X题_赛题简称/
-├── code/          # Python 代码（按问题编号：q1_*.py, q2_*.py）
-├── figures/       # 可视化图表（fig1.png, fig2.png，≥300 DPI）
-└── paper/         # 论文（paper.tex + paper.pdf + paper.docx）
-```
+3. 在 `./第X题_赛题简称/` 目录下获取完整输出
 
 ## 📐 输出规范
 
