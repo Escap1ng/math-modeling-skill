@@ -3,7 +3,7 @@
 <p align="center"><b>🌐 Language:</b> <a href="./README.en.md">English</a> | 中文</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-v1.0.1-2196F3" alt="版本">
+  <img src="https://img.shields.io/github/v/release/Escap1ng/math-modeling-skill?color=2196F3&label=版本" alt="版本">
   <img src="https://img.shields.io/badge/许可证-MIT-4CAF50" alt="许可证">
   <img src="https://img.shields.io/badge/赛事-CUMCM-FF5722" alt="赛事">
   <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white" alt="Python">
