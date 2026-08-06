@@ -15,6 +15,24 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 
 ## 工作流（强制执行）
 
+### 阶段零：环境预检（前置检查）
+
+**在开始建模前，必须检查以下环境依赖是否可用**：
+
+1. **编译环境**：
+   - 检查 `xelatex` 是否可用（用于生成PDF）
+   - 若不可用，提示安装 TeX Live 或 MiKTeX
+2. **Python依赖**：
+   - 检查 `python-docx`（用于生成Word）
+   - 检查 `PyMuPDF`（用于读取PDF数据）
+   - 检查 `openpyxl`（用于读取Excel数据）
+   - 若缺失，自动执行 `pip install python-docx pymupdf openpyxl`
+3. **绘图库**：
+   - 检查 `matplotlib`、`seaborn`、`numpy`、`pandas`
+   - 若缺失，自动执行安装
+
+**输出**：环境状态报告（哪些可用、哪些已自动安装、哪些需用户手动处理）
+
 ### 阶段一：赛题分析与背景调研
 
 **不输出给用户**，仅作为建模依据：
@@ -102,8 +120,14 @@ python generate_word.py
 
 1. 逐项打分并记录扣分理由
 2. 汇总总分，判定是否达标
-3. 若 $S < 85$：列出具体扣分项 -> 针对性修改 -> 重新评分，循环直至达标
+3. 若 $S < 85$：列出具体扣分项 -> 针对性修改 -> 重新评分
 4. 若 $S \geq 85$：输出最终论文，附评分表
+
+**熔断机制**（防止无限循环）：
+
+- 最大优化轮次：**3 轮**
+- 若 3 轮后仍未达标（$S < 85$）：输出当前版本论文，附评分表与剩余扣分项说明，明确标注"未达 85 分标准，需人工复核"
+- 每轮优化必须有明确改进动作，禁止无实质性修改的空转
 
 ***
 
@@ -116,6 +140,8 @@ python generate_word.py
 **精确求解**：
 
 - 0-1整数规划、非线性规划、动态规划、分支定界法、线性规划（LP）、匈牙利算法（指派问题）
+- 目标规划（多目标妥协方案）、运输问题（表上作业法/最小元素法）、二次规划（QP）、拉格朗日松弛
+- 博弈论（零和博弈、纳什均衡、演化博弈）：竞争/合作决策类问题
 
 **启发式优化**：
 
@@ -123,6 +149,13 @@ python generate_word.py
 - 模拟退火（SA）：多起点退火、自适应冷却
 - 粒子群（PSO）：混沌初始化、动态惯性权重
 - 禁忌搜索（TS）：禁忌表记忆、邻域搜索增强
+
+#### 图论与网络优化（路径/网络类问题首选）
+
+**最短路径**：Dijkstra（单源非负权）、Floyd（多源）、Bellman-Ford（含负权）
+**网络结构**：最小生成树（Prim/Kruskal）、最大流（Ford-Fulkerson/Dinic）、最小费用最大流
+**组合难题**：旅行商问题TSP（精确：动态规划/分支定界；近似：2-opt、最近邻+GA改进）、车辆路径问题VRP、二分图匹配
+**适用场景**：交通调度、物流配送、选址布线、通信路由、社交网络分析
 
 #### 前沿智能优化（创新方案）
 
@@ -149,6 +182,9 @@ python generate_word.py
 **回归插值**：多元回归、样条插值、响应面法（RSM）、高斯过程回归（GPR）、岭回归/Lasso
 **降维聚类**：PCA、t-SNE、K-means/DBSCAN、UMAP、层次聚类、高斯混合模型（GMM）
 **时间序列**：ARIMA、LSTM/GRU、Prophet、指数平滑（Holt-Winters）、VAR
+**小样本预测（国赛高频）**：灰色预测GM(1,1)（少数据、贫信息场景首选，可作基线对比）、马尔可夫链预测（状态转移类问题）、组合预测（多模型加权/最优组合）
+**分类与判别**：判别分析（Fisher判别）、逻辑回归、朴素贝叶斯
+**数据挖掘**：关联规则挖掘（Apriori）
 
 #### 综合评价与多属性决策（评价/排序类问题首选）
 
@@ -160,6 +196,7 @@ python generate_word.py
 #### 物理与工程建模
 
 **运动动力学**：运动学模型、拉格朗日力学、有限元分析、刚体动力学
+**微分方程数值解（A题必备）**：欧拉法、龙格-库塔法（RK4，scipy.solve_ivp）、有限差分法（PDE离散化）、SIR/SEIR传染病模型、稳定性分析（平衡点+相图）
 **仿真计算**：事件驱动仿真、蒙特卡洛仿真、DES、元胞自动机（CA）、多智能体仿真（ABM）、排队论
 **信号处理**：FFT、小波变换、EMD、卡尔曼滤波、Hilbert-Huang变换（HHT）
 
@@ -334,73 +371,6 @@ def ga_cross_validate(gene_pool, n_periods, simulator,
     fitness = [simulator.run(ind) for ind in pop]
     return max(zip(pop, fitness), key=lambda x: x[1])
 ```
-
-#### 迁移适宜度指标（异构网络创新方法）
-
-**适用场景**：异构网络中用户从微基站迁移到宏基站的决策。
-
-```python
-def migration_suitability(user, src_bs, macro_bs, bs_data, alpha=0.5):
-    """
-    迁移适宜度 = α * 基站剩余资源标准化 + (1-α) * 速率增益比标准化
-    注意：min_res/max_res/min_gain/max_gain 需在调用前基于全局基站数据预计算
-          calc_rate 需根据具体赛题的信道模型定义
-    """
-    # 基站剩余资源标准化
-    res_rem = bs_data[src_bs]['remaining_rb'] / bs_data[src_bs]['total_rb']
-    res_norm = (res_rem - min_res) / (max_res - min_res + 1e-6)
-    # 速率增益比
-    r_macro = calc_rate(macro_bs, user)
-    r_src = calc_rate(src_bs, user)
-    gain = r_macro / (r_src + 1e-6)
-    gain_norm = (gain - min_gain) / (max_gain - min_gain + 1e-6)
-    # 加权
-    return alpha * res_norm + (1 - alpha) * gain_norm
-```
-
-#### 跨周期优化（动态调度创新方法）
-
-**适用场景**：mMTC等高时延容忍任务的跨周期调度。
-
-```python
-def cross_period_optimization(queues, n_periods, delay_sla=500e-3):
-    """跨周期任务延续机制"""
-    for user, tasks in queues.items():
-        for task in tasks:
-            # 允许未完成任务延续至后续周期
-            if task.waiting_time < delay_sla:
-                task.carry_over = True  # 标记为跨周期任务
-    # 终态统计法：n_periods周期结束后统一计算QoS
-    total_qos = sum(calc_qos(task) for tasks in queues.values() for task in tasks)
-    return total_qos
-
-# 注意：calc_qos 需根据具体赛题定义，n_periods 为总周期数
-```
-
-#### QoS累加计算规范（基于优秀论文）
-
-**核心原则**：系统总QoS = 所有用户所有任务得分之和（非均值）
-
-```python
-def calc_total_qos_sum(urllc_qoss, embb_qoss, mmtc_qoss):
-    """
-    正确的QoS累加计算（非均值）
-    系统总QoS = sum(所有URLLC用户得分) + sum(所有eMBB用户得分) + sum(所有mMTC用户得分)
-    """
-    total = sum(urllc_qoss) + sum(embb_qoss) + sum(mmtc_qoss)
-    return total
-
-# 错误做法（均值求和）：
-# total = np.mean(urllc_qoss) + np.mean(embb_qoss) + np.mean(mmtc_qoss)
-
-# 多周期场景：
-# 总QoS = sum(所有周期所有用户得分)
-```
-
-**关键区别**：
-
-- ❌ 错误：`np.mean(qoss_u) + np.mean(qoss_e) + np.mean(qoss_m)`
-- ✅ 正确：`sum(qoss_u) + sum(qoss_e) + sum(qoss_m)`
 
 #### 数据读取模块
 
@@ -715,19 +685,13 @@ create_word_paper()
 - 系统化实验：单方案实验→组合实验→变异验证
 - GA交叉验证：50代迭代验证全局最优性
 
-**2. 创新指标构建**：
-
-- 迁移适宜度指标：$\alpha \cdot$ 剩余资源 $+ (1-\alpha) \cdot$ 速率增益
-- 跨周期优化：mMTC任务延续至后续周期
-- 终态统计法：10周期结束后统一计算
-
-**3. 数据预处理必须包含**：
+**2. 数据预处理必须包含**：
 
 - 数据完整性检验（缺失值）
 - 数据有效性检验（异常值/离群值）
 - 可视化分布图
 
-**4. 结果验证必须包含**：
+**3. 结果验证必须包含**：
 
 - 遗传算法收敛曲线
 - 关键跃迁现象分析
@@ -997,8 +961,10 @@ plt.savefig('fig_pareto.png', dpi=300, bbox_inches='tight')
 
 #### 可视化要求清单
 
-- [ ] 每道小题至少1张彩色图
-- [ ] 全文图片总数≥4张，建议6张以上
+> **图片数量标准（统一引用）**：每道小题至少1张彩色图；全文建议6张以上，保底不低于4张。详见上方"强制要求"。
+
+- [ ] 每道小题至少1张彩色图（≥1张，建议2-3张）
+- [ ] 全文图片总数≥保底4张，建议6张以上
 - [ ] 图片随对应分析文字就近插入，不集中堆放在章节末/文末
 - [ ] 优化问题：三维曲面图 + 迭代收敛曲线
 - [ ] 参数分析：热力图 + 等高线图
@@ -1200,8 +1166,8 @@ plt.savefig('fig_pareto.png', dpi=300, bbox_inches='tight')
 \geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
 
 % ========== 标题格式（2026规范） ==========
-\renewcommand{\thesection}{\chinese{section}}  % 一级标题使用中文数字，确保交叉引用与显示一致
-\titleformat{\section}{\centering\heiti\fontsize{14}{18}\selectfont}{\thesection}{1em}{}
+\renewcommand{\thesection}{\chinese{section}}  % 一级标题使用中文数字
+\titleformat{\section}{\centering\heiti\fontsize{14}{18}\selectfont}{\thesection、}{1em}{}  % 标题显示加顿号，交叉引用不受影响
 \titleformat{\subsection}{\heiti\fontsize{12}{16}\selectfont}{\arabic{section}.\arabic{subsection}}{1em}{}
 \titleformat{\subsubsection}{\heiti\fontsize{12}{16}\selectfont}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
 
@@ -1547,6 +1513,10 @@ plt.savefig('fig_pareto.png', dpi=300, bbox_inches='tight')
 | 多方法融合     | 多方法智能融合策略      |
 | 评价/排序类问题 | 熵权-TOPSIS（首选）、AHP、灰色关联分析 |
 | 指标权重确定 | 熵权法、CRITIC、AHP |
+| 最短路径/网络流 | Dijkstra/Floyd、最大流、最小生成树 |
+| 路径规划/配送 | TSP/VRP + GA/蚁群求解 |
+| 时序预测 | ARIMA、Prophet、LSTM；小样本用GM(1,1) |
+| 机理演化类（A题） | 微分方程组 + RK4数值解 + 敏感性分析 |
 
 ### 问题递进关系
 
@@ -1565,7 +1535,8 @@ plt.savefig('fig_pareto.png', dpi=300, bbox_inches='tight')
 | 图片文字不全    | 设置 SimHei，使用 bbox\_inches='tight'   |
 | 文字超出纸张    | 使用 seqsplit，tabularx，\[H]定位         |
 | caption报错 | 使用 font=small，禁止 font={font=10.5pt} |
-| 摘要页边距错误   | 删除摘要环境内的 \setlength{\leftskip}      |
 | 假设用列表非表格   | 改用 tabular 三线表，表题在上方，含合理性说明        |
 | 假设表格显示不全   | `tabular`的`l`列不换行，改用`tabularx`的`X`列  |
+
+
 
