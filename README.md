@@ -5,7 +5,6 @@
 ![Repo Size](https://img.shields.io/github/repo-size/Escap1ng/math-modeling-skill)
 ![Release Date](https://img.shields.io/github/release-date/Escap1ng/math-modeling-skill)
 ![Contributors](https://img.shields.io/github/contributors/Escap1ng/math-modeling-skill)
-![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill)
 
 **🌐 Language:** [English](https://github.com/Escap1ng/math-modeling-skill/blob/main/README.en.md) | 中文
 
