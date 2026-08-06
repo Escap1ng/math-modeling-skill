@@ -3,9 +3,9 @@
 ![Version](https://img.shields.io/github/v/release/Escap1ng/math-modeling-skill?sort=semver&label=release&color=blue)
 ![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill)
 ![Repo Size](https://img.shields.io/github/repo-size/Escap1ng/math-modeling-skill)
-![Release Date](https://img.shields.io/github/release-date/Escap1ng/math-modeling-skill)
-![Contributors](https://img.shields.io/github/contributors/Escap1ng/math-modeling-skill)
-![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill)
+![Top Language](https://img.shields.io/github/languages/top/Escap1ng/math-modeling-skill?label=Top%20Language)
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/Escap1ng/math-modeling-skill?label=Monthly%20Commits)
 
 **🌐 Language:** [中文](https://github.com/Escap1ng/math-modeling-skill/blob/main/README.md) | English
 
