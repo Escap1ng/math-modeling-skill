@@ -76,16 +76,16 @@
 
 | 类别 | 方法 |
 |---|---|
-| 经典优化 | 0-1 整数规划、非线性规划、动态规划、分支定界、线性规划（LP）、匈牙利算法 |
-| 启发式优化 | 遗传算法（GA）、模拟退火（SA）、粒子群（PSO）、禁忌搜索（TS） |
-| 群体智能 | 差分进化（DE）、蚁群算法（ACO）、灰狼优化（GWO）、鲸鱼优化（WOA）、人工蜂群（ABC）、麻雀搜索（SSA）、蜣螂优化（DBO） |
-| 机器学习 | XGBoost、SVM、随机森林、LightGBM、CatBoost、KNN、Transformer、CNN、RNN/LSTM、自编码器（AE/VAE） |
+| 经典优化 | 0-1整数规划、非线性规划、动态规划<br>分支定界、线性规划（LP）、匈牙利算法 |
+| 启发式优化 | 遗传算法（GA）、模拟退火（SA）<br>粒子群（PSO）、禁忌搜索（TS） |
+| 群体智能 | 差分进化（DE）、蚁群算法（ACO）、灰狼优化（GWO）<br>鲸鱼优化（WOA）、人工蜂群（ABC）<br>麻雀搜索（SSA）、蜣螂优化（DBO） |
+| 机器学习 | XGBoost、SVM、随机森林、LightGBM<br>CatBoost、KNN、Transformer、CNN<br>RNN/LSTM、自编码器（AE/VAE） |
 | 强化学习 | DQN、PPO、SAC、TD3 |
-| 统计分析 | 假设检验（Z/t/卡方、ANOVA、Shapiro-Wilk）、回归插值（RSM、GPR、岭回归/Lasso）、降维聚类（PCA、t-SNE、K-means、UMAP、GMM）、时间序列（ARIMA、Prophet、Holt-Winters、VAR） |
-| 综合评价 | TOPSIS、熵权法、CRITIC、AHP、灰色关联分析、模糊综合评价、DEA |
-| 物理与工程 | 运动学、拉格朗日力学、有限元分析、蒙特卡洛仿真、DES、元胞自动机、排队论 |
+| 统计分析 | 假设检验（Z/t/卡方、ANOVA、Shapiro-Wilk）<br>回归插值（RSM、GPR、岭回归/Lasso）<br>降维聚类（PCA、t-SNE、K-means、UMAP、GMM）<br>时间序列（ARIMA、Prophet、Holt-Winters、VAR） |
+| 综合评价 | TOPSIS、熵权法、CRITIC、AHP<br>灰色关联分析、模糊综合评价、DEA |
+| 物理与工程 | 运动学、拉格朗日力学、有限元分析<br>蒙特卡洛仿真、DES、元胞自动机、排队论 |
 | 信号处理 | FFT、小波变换、EMD、卡尔曼滤波、HHT |
-| 前沿方法 | PINN、DeepONet/FNO、数字孪生、符号回归、SHAP/LIME、因果推断、NSGA-II/III、贝叶斯优化、GNN |
+| 前沿方法 | PINN、DeepONet/FNO、数字孪生<br>符号回归、SHAP/LIME、因果推断<br>NSGA-II/III、贝叶斯优化、GNN |
 
 ## 🔄 工作流
 
