@@ -76,16 +76,16 @@ Problem_X_short_name/
 
 | Category | Methods |
 |---|---|
-| Classical Optimization | 0-1 integer programming, nonlinear programming, dynamic programming, branch and bound, Linear Programming (LP), Hungarian algorithm |
-| Heuristic Optimization | Genetic Algorithm (GA), Simulated Annealing (SA), Particle Swarm Optimization (PSO), Tabu Search (TS) |
-| Swarm Intelligence | Differential Evolution (DE), Ant Colony Optimization (ACO), Grey Wolf Optimizer (GWO), Whale Optimization Algorithm (WOA), Artificial Bee Colony (ABC), Sparrow Search Algorithm (SSA), Dung Beetle Optimizer (DBO) |
-| Machine Learning | XGBoost, SVM, Random Forest, LightGBM, CatBoost, KNN, Transformer, CNN, RNN/LSTM, Autoencoder (AE/VAE) |
+| Classical Optimization | 0-1 integer programming, nonlinear programming, dynamic programming<br>branch and bound, Linear Programming (LP), Hungarian algorithm |
+| Heuristic Optimization | Genetic Algorithm (GA), Simulated Annealing (SA)<br>Particle Swarm Optimization (PSO), Tabu Search (TS) |
+| Swarm Intelligence | Differential Evolution (DE), Ant Colony Optimization (ACO), Grey Wolf Optimizer (GWO)<br>Whale Optimization Algorithm (WOA), Artificial Bee Colony (ABC)<br>Sparrow Search Algorithm (SSA), Dung Beetle Optimizer (DBO) |
+| Machine Learning | XGBoost, SVM, Random Forest, LightGBM<br>CatBoost, KNN, Transformer, CNN<br>RNN/LSTM, Autoencoder (AE/VAE) |
 | Reinforcement Learning | DQN, PPO, SAC, TD3 |
-| Statistical Analysis | Hypothesis testing (Z/t/chi-square, ANOVA, Shapiro-Wilk), regression interpolation (RSM, GPR, ridge/Lasso), dimensionality reduction & clustering (PCA, t-SNE, K-means, UMAP, GMM), time series (ARIMA, Prophet, Holt-Winters, VAR) |
-| Comprehensive Evaluation | TOPSIS, entropy weight, CRITIC, AHP, grey relational analysis, fuzzy comprehensive evaluation, DEA |
-| Physics & Engineering | Kinematics, Lagrangian mechanics, finite element analysis, Monte Carlo simulation, DES, cellular automata, queuing theory |
+| Statistical Analysis | Hypothesis testing (Z/t/chi-square, ANOVA, Shapiro-Wilk)<br>regression interpolation (RSM, GPR, ridge/Lasso)<br>dimensionality reduction & clustering (PCA, t-SNE, K-means, UMAP, GMM)<br>time series (ARIMA, Prophet, Holt-Winters, VAR) |
+| Comprehensive Evaluation | TOPSIS, entropy weight, CRITIC, AHP<br>grey relational analysis, fuzzy comprehensive evaluation, DEA |
+| Physics & Engineering | Kinematics, Lagrangian mechanics, finite element analysis<br>Monte Carlo simulation, DES, cellular automata, queuing theory |
 | Signal Processing | FFT, wavelet transform, EMD, Kalman filter, HHT |
-| Frontier Methods | PINN, DeepONet/FNO, digital twin, symbolic regression, SHAP/LIME, causal inference, NSGA-II/III, Bayesian optimization, GNN |
+| Frontier Methods | PINN, DeepONet/FNO, digital twin<br>symbolic regression, SHAP/LIME, causal inference<br>NSGA-II/III, Bayesian optimization, GNN |
 
 ## 🔄 Workflow
 
