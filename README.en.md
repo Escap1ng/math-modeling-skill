@@ -14,9 +14,32 @@ Covers the full pipeline of **problem understanding → model construction → a
 
 ## 🆕 What's New in v2.0.0
 
-- **Strengthened "Anonymity & Confidentiality" mandatory requirements (one-vote veto)**: Participant names, schools, contest zones, team IDs, and advisor information are strictly prohibited anywhere in the abstract page, main text, and appendix (including supporting materials); headers are prohibited (header area must be completely empty).
-- **Page number specification**: Continuous numbering starts from the first page (abstract page, which is page 1), with page numbers centered at the footer; the footer may only contain the centered page number.
-- **Synchronized updates**: LaTeX template header/footer configuration, mandatory formatting rules (new "Rule 0: Anonymity & Confidentiality"), paper quality self-check list (new `[Fatal] Anonymity & Confidentiality`), scoring system (new one-vote veto item in the layout dimension), and Word document formatting points.
+### 1. Anonymity & Confidentiality Requirements (One-Vote Veto, Mandatory)
+
+- Participant names, schools, contest zones, team IDs, and advisor information are **strictly prohibited** anywhere in the abstract page, main text, and appendix (including supporting materials).
+- **No headers**: The header area must be completely empty — no text, images, or rules (set `\renewcommand{\headrulewidth}{0pt}` in LaTeX).
+- **Empty author block**: `\author{}` and `\date{}` must be empty, so `\maketitle` displays neither author nor date.
+- **Restricted footer**: The footer may only contain the centered page number — no school or team ID.
+- **Full coverage**: Images (watermarks/school names), tables, code comments, and file names must not reveal any identity information either.
+
+### 2. Page Number Specification
+
+- Continuous numbering starts from the **first page (abstract page)**, which is page 1.
+- Page numbers are **centered at the footer** (`\fancyfoot[C]{\thepage}`).
+- Add `\thispagestyle{fancy}` after `\maketitle` to override the default plain style, ensuring the abstract page shows the page number from the very beginning.
+
+### 3. Template & Formatting Updates
+
+- LaTeX template header/footer configuration: cleared headers/footers, centered footer page numbers, and no header rule.
+- New "**Rule 0: Anonymity & Confidentiality**" in the mandatory formatting rules.
+- Word document formatting points: empty headers, centered footer page numbers, and anonymity requirements.
+
+### 4. Strengthened Self-Check List & Scoring System
+
+- New `[Fatal] Anonymity & Confidentiality` section in the paper quality self-check list (4 checks with corresponding fixes).
+- New items in the scoring system (layout dimension):
+  - Participant identity/school/contest zone information or headers present → **one-vote veto, direct elimination, zero score**;
+  - Page numbers not starting from the abstract page (page 1) or not centered at the footer → -2.
 
 ## 🚀 Quick Start
 
