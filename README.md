@@ -1,5 +1,12 @@
 # Math Modeling Helper
 
+![Version](https://img.shields.io/github/v/release/Escap1ng/math-modeling-skill?sort=semver&label=release&color=blue)
+![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill)
+![Stars](https://img.shields.io/github/stars/Escap1ng/math-modeling-skill)
+![Forks](https://img.shields.io/github/forks/Escap1ng/math-modeling-skill)
+![Issues](https://img.shields.io/github/issues/Escap1ng/math-modeling-skill)
+![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill)
+
 **🌐 Language:** [English](https://github.com/Escap1ng/math-modeling-skill/blob/main/README.en.md) | 中文
 
 数学建模竞赛全流程 AI 辅助技能 —— 从赛题分析到论文生成，一站式解决。
