@@ -76,14 +76,16 @@ Problem_X_short_name/
 
 | Category | Methods |
 |---|---|
-| Classical Optimization | 0-1 integer programming, nonlinear programming, dynamic programming, branch and bound |
-| Heuristic Optimization | Genetic Algorithm (GA), Simulated Annealing (SA), Particle Swarm Optimization (PSO) |
-| Swarm Intelligence | Differential Evolution (DE), Ant Colony Optimization (ACO), Grey Wolf Optimizer (GWO), Sparrow Search Algorithm (SSA), Dung Beetle Optimizer (DBO) |
-| Machine Learning | XGBoost, SVM, Random Forest, Transformer, CNN, LSTM/GRU |
-| Reinforcement Learning | DQN, PPO |
-| Statistical Analysis | Hypothesis testing, regression interpolation, Response Surface Methodology (RSM), PCA, time series (ARIMA, Prophet) |
-| Signal Processing | FFT, wavelet transform, EMD |
-| Frontier Methods | PINN, DeepONet/FNO, symbolic regression, SHAP/LIME, NSGA-II/III, GNN |
+| Classical Optimization | 0-1 integer programming, nonlinear programming, dynamic programming, branch and bound, Linear Programming (LP), Hungarian algorithm |
+| Heuristic Optimization | Genetic Algorithm (GA), Simulated Annealing (SA), Particle Swarm Optimization (PSO), Tabu Search (TS) |
+| Swarm Intelligence | Differential Evolution (DE), Ant Colony Optimization (ACO), Grey Wolf Optimizer (GWO), Whale Optimization Algorithm (WOA), Artificial Bee Colony (ABC), Sparrow Search Algorithm (SSA), Dung Beetle Optimizer (DBO) |
+| Machine Learning | XGBoost, SVM, Random Forest, LightGBM, CatBoost, KNN, Transformer, CNN, RNN/LSTM, Autoencoder (AE/VAE) |
+| Reinforcement Learning | DQN, PPO, SAC, TD3 |
+| Statistical Analysis | Hypothesis testing (Z/t/chi-square, ANOVA, Shapiro-Wilk), regression interpolation (RSM, GPR, ridge/Lasso), dimensionality reduction & clustering (PCA, t-SNE, K-means, UMAP, GMM), time series (ARIMA, Prophet, Holt-Winters, VAR) |
+| Comprehensive Evaluation | TOPSIS, entropy weight, CRITIC, AHP, grey relational analysis, fuzzy comprehensive evaluation, DEA |
+| Physics & Engineering | Kinematics, Lagrangian mechanics, finite element analysis, Monte Carlo simulation, DES, cellular automata, queuing theory |
+| Signal Processing | FFT, wavelet transform, EMD, Kalman filter, HHT |
+| Frontier Methods | PINN, DeepONet/FNO, digital twin, symbolic regression, SHAP/LIME, causal inference, NSGA-II/III, Bayesian optimization, GNN |
 
 ## 🔄 Workflow
 
