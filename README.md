@@ -1,11 +1,11 @@
 # 数学建模竞赛辅助技能
 
-![Version](https://img.shields.io/github/v/release/Escap1ng/math-modeling-skill?sort=semver&label=版本&color=blue)
-![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?label=许可证)
-![Repo Size](https://img.shields.io/github/repo-size/Escap1ng/math-modeling-skill?label=仓库大小)
-![Top Language](https://img.shields.io/github/languages/top/Escap1ng/math-modeling-skill?label=主要语言)
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Commit Activity](https://img.shields.io/github/commit-activity/m/Escap1ng/math-modeling-skill?label=月活跃度)
+![Version](https://img.shields.io/github/v/release/Escap1ng/math-modeling-skill?sort=semver&label=版本&color=2563eb)
+![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?label=许可证&color=16a34a)
+![Repo Size](https://img.shields.io/github/repo-size/Escap1ng/math-modeling-skill?label=仓库大小&color=f59e0b)
+![Top Language](https://img.shields.io/github/languages/top/Escap1ng/math-modeling-skill?label=主要语言&color=7c3aed)
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/Escap1ng/math-modeling-skill?label=月活跃度&color=dc2626)
 
 **🌐 语言：** [English](https://github.com/Escap1ng/math-modeling-skill/blob/main/README.en.md) | 中文
 
