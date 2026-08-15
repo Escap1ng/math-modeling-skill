@@ -1756,7 +1756,7 @@ plt.savefig('../figures/final/fig1_flow_q_overview.png', dpi=300, bbox_inches='t
 | 段落间逻辑断裂 | -2 |
 | 病句或表述歧义 | 每处 -1 |
 
-**5. 排版（10分）**
+**5. 排版（15分）**
 
 | 检查项 | 扣分标准 |
 | ------ | -------- |
