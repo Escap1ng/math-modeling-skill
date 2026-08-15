@@ -27,7 +27,7 @@ V3.0.0 is a full upgrade on top of the algorithm library and scoring system: a n
 > - **Anonymity upgraded**: any identity information or header content is a one-strike disqualification
 > - **Implementation quick reference**: mature libraries first (pulp, scipy, networkx, statsmodels, etc.) — no reinventing the wheel
 > - **Algorithm library expanded**: basic numerical methods, decision analysis (decision trees, cost-benefit), statistical inference (MLE, EM, Bayesian), frontier methods (digital twin, causal inference DID, MOEA/D, Louvain)
-> - **Scoring recalibrated**: writing raised to 15 points and layout to 10, five dimensions totaling 100; the 85-point gate and 3-round circuit breaker are retained
+> - **Scoring recalibrated**: writing 15 points and layout 15 points, five dimensions totaling 100; the 85-point gate and 3-round circuit breaker are retained
 
 ## 🚀 Quick Start
 
@@ -125,7 +125,7 @@ Final output ← Stage 6 score ≥ 85? → Stage 5 paper output (PDF + Word) ←
 | Algorithm / Model correctness | 20 | Sound derivation, complete constraints, reasonable results |
 | Innovation | 20 | Method novelty, cross-disciplinary fusion, custom metrics |
 | Writing | 15 | Logical flow, academic tone, data-backed claims, no vague or AI-style phrasing |
-| Layout | 10 | Formatting, figures & tables, symbol consistency, anonymity compliance (one-strike) |
+| Layout | 15 | Formatting, figures & tables, symbol consistency, anonymity compliance (one-strike) |
 
 **The final paper is released only at ≥ 85 points.** Below the gate, deductions are listed and fixed, then re-scored — at most 3 rounds (circuit breaker against infinite loops); if still below the gate after 3 rounds, the paper is marked "requires manual review".
 
