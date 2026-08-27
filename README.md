@@ -41,9 +41,23 @@
 
 ---
 
+## 使用
+
+把根目录的 `SKILL.md` 复制到 agent 的技能目录（目录名即技能名），如 `~/.claude/skills/`，重启后即可自动识别。
+
+```powershell
+$dir = "$HOME\.claude\skills\math-modeling-helper"   # 按所用 agent 的技能目录调整
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+Copy-Item .\SKILL.md -Destination $dir -Force
+```
+
+依赖：Python 3 + `numpy` / `pandas` / `matplotlib` / `seaborn`；论文输出需 `xelatex` 与 `pandoc`（Word 微调需 `python-docx`）。其余求解库按赛题需要选用，详见[环境依赖](#环境依赖)。
+
+---
+
 ## 快速开始
 
-在 AI IDE（如 TRAE）中将本仓库添加为自定义技能，随后三步即可完成建模：
+技能装入 AI IDE 后，三步即可完成建模：
 
 ```
 1️⃣ 上传赛题文件（PDF / Excel / 文本）或直接粘贴赛题内容

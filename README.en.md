@@ -41,9 +41,23 @@ The skill ships with a curated algorithm library, publication-grade visualizatio
 
 ---
 
+## Usage
+
+Copy the root `SKILL.md` into your agent's skills directory (the folder name is the skill name), e.g. `~/.claude/skills/`; it is picked up automatically after a restart.
+
+```powershell
+$dir = "$HOME\.claude\skills\math-modeling-helper"   # adjust to your agent's skills directory
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+Copy-Item .\SKILL.md -Destination $dir -Force
+```
+
+Dependencies: Python 3 with `numpy` / `pandas` / `matplotlib` / `seaborn`; `xelatex` and `pandoc` for paper output (`python-docx` for Word fine-tuning). Other solver libraries are selected per problem — see [Environment](#environment).
+
+---
+
 ## Quick Start
 
-Add this repository as a custom skill in your AI IDE (e.g., TRAE), then finish a modeling task in three steps:
+Once the skill is installed in your AI IDE, finish a modeling task in three steps:
 
 ```
 1️⃣ Upload the problem files (PDF / Excel / text) or paste the problem content
