@@ -43,15 +43,9 @@ The skill ships with a curated algorithm library, publication-grade visualizatio
 
 ## Usage
 
-Copy the root `SKILL.md` into your agent's skills directory (the folder name is the skill name), e.g. `~/.claude/skills/`; it is picked up automatically after a restart.
+Copy the root `SKILL.md` into your agent's skills directory (e.g. `~/.claude/skills/math-modeling-helper/`).
 
-```powershell
-$dir = "$HOME\.claude\skills\math-modeling-helper"   # adjust to your agent's skills directory
-New-Item -ItemType Directory -Force -Path $dir | Out-Null
-Copy-Item .\SKILL.md -Destination $dir -Force
-```
-
-Dependencies: Python 3 with `numpy` / `pandas` / `matplotlib` / `seaborn`; `xelatex` and `pandoc` for paper output (`python-docx` for Word fine-tuning). Other solver libraries are selected per problem — see [Environment](#environment).
+Dependencies: Python 3 with `numpy` / `pandas` / `matplotlib` / `seaborn`; `xelatex` and `pandoc` for paper output (`python-docx` for Word fine-tuning).
 
 ---
 

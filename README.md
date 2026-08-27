@@ -43,15 +43,9 @@
 
 ## 使用
 
-把根目录的 `SKILL.md` 复制到 agent 的技能目录（目录名即技能名），如 `~/.claude/skills/`，重启后即可自动识别。
+把根目录的 `SKILL.md` 复制到 agent 的技能目录（如 `~/.claude/skills/math-modeling-helper/`）即可。
 
-```powershell
-$dir = "$HOME\.claude\skills\math-modeling-helper"   # 按所用 agent 的技能目录调整
-New-Item -ItemType Directory -Force -Path $dir | Out-Null
-Copy-Item .\SKILL.md -Destination $dir -Force
-```
-
-依赖：Python 3 + `numpy` / `pandas` / `matplotlib` / `seaborn`；论文输出需 `xelatex` 与 `pandoc`（Word 微调需 `python-docx`）。其余求解库按赛题需要选用，详见[环境依赖](#环境依赖)。
+依赖：Python 3 + `numpy` / `pandas` / `matplotlib` / `seaborn`；论文输出需 `xelatex` 与 `pandoc`（Word 微调需 `python-docx`）。
 
 ---
 
