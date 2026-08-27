@@ -880,7 +880,7 @@ FILL_ALPHA = 0.2
 HATCH_SEQUENCE = ['', '---', '|||']   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
 from matplotlib.colors import LinearSegmentedColormap
 SURFACE_CMAP   = LinearSegmentedColormap.from_list('academic_seq',
-    ['#2F4B7C', '#4C72B0', '#8E9AAF', '#E9EFF7'])   # 波谷深蓝→波峰极浅蓝灰（3D曲面单色渐变，"石膏雕塑感"）
+    ['#2F4B7C', '#4C72B0', '#8E9AAF', '#E9EFF7'])   # 波谷深蓝→波峰极浅蓝灰（顺序量单色渐变，"石膏雕塑感"）
 DIVERGENT_CMAP = LinearSegmentedColormap.from_list('academic_div',
     ['#4C72B0', '#F5F5F5', '#C44E52'])              # 负蓝→中心灰白→正红（热力图发散学术低饱和）
 FIG_FULL = (6.3, 4.0)   # 整版宽图（A4 版心 16cm ≈ 6.3in）
@@ -946,34 +946,45 @@ save_fig(fig, '../figures/final/fig2_perf_q1.png', vector=True)
 
 > **函数化建议**：正式项目中可将每个模板封装为参数化函数（仅暴露数据/标签/路径参数），统一放入 `code/plot_templates.py` 复用，避免逐次复制改造；样式初始化统一复用 `code/plot_style.py`（见上），模板内勿重复设置 rcParams（参考上方统一绘图工具模块的组织方式）。
 
-**模板1：三维曲面图（带渐变光照效果）**
+**模板1：三维曲面图（定比三维框 + 独立 colorbar）**
 
 ```python
-from plot_style import SURFACE_CMAP   # 单色渐变"石膏雕塑感"：高度仅以明度体现（禁 jet/rainbow）
+from matplotlib.colors import Normalize            # 与 numpy / pyplot 一并 import
+from plot_style import DIVERGENT_CMAP, save_fig    # 冷暖双极（高值红/低值蓝）；要"石膏雕塑感"单色渐变换 SURFACE_CMAP
 
-fig = plt.figure(figsize=(8, 6))
-ax = fig.add_subplot(111, projection='3d')
+fig = plt.figure(figsize=(9.2, 7.2))
+ax = fig.add_axes([0.02, 0.05, 0.78, 0.88], projection='3d')   # 手动留位：右侧空出 colorbar，勿用 add_subplot + colorbar(ax=ax)（会压扁曲面）
 
-# 大数据自适应采样：网格≥80行时按步长降采样，显著提速（小网格自动取 1 = 全分辨率）
-stride = max(1, np.asarray(X).shape[0] // 80)
-surf = ax.plot_surface(X, Y, Z,
-    cmap=SURFACE_CMAP,
-    alpha=0.95,
-    edgecolor='none',
-    antialiased=True,
-    rstride=stride, cstride=stride
-)
-ax.contourf(X, Y, Z, zdir='z', offset=Z.min(), cmap=SURFACE_CMAP, alpha=0.5)  # 底部投影
+norm = Normalize(vmin=Z.min(), vmax=Z.max())      # 色带上下限锁定数据极值，颜色与高度严格对应
+surf = ax.plot_surface(X, Y, Z, cmap=DIVERGENT_CMAP, norm=norm,
+    linewidth=0, antialiased=True, shade=True, alpha=0.96,
+    rstride=1, cstride=1)                         # 大网格提速：rstride=cstride=max(1, Z.shape[0]//80)
 
-# pad≥0.15、labelpad≥12 防 colorbar/轴标签与曲面重叠
-fig.colorbar(surf, ax=ax, shrink=0.6, pad=0.15, label='目标函数值')
-ax.set_xlabel('参数α', labelpad=12)
-ax.set_ylabel('参数β', labelpad=12)
-ax.zaxis.set_rotate_label(False)   # 禁止 z 标签旋转，避免"目标值"与曲面交叠
-ax.set_zlabel('目标值', labelpad=18)  # 加大 labelpad，z 标签远离曲面
-ax.view_init(elev=25, azim=135)   # 最佳视角
-ax.set_title('三维曲面图', pad=16)
-plt.savefig('../figures/final/fig_3d_surface.png', dpi=300, bbox_inches='tight')
+ax.set_xlabel('参数α', fontsize=13, labelpad=10)   # 图内标注一律中文（依赖 plot_style 的 CJK 字体回退）
+ax.set_ylabel('参数β', fontsize=13, labelpad=10)
+ax.set_zlabel('目标值', fontsize=12, labelpad=8)
+ax.set_xlim(X.min(), X.max()); ax.set_ylim(Y.min(), Y.max()); ax.set_zlim(Z.min(), Z.max())
+ax.set_xticks(np.linspace(X.min(), X.max(), 6))   # 刻度手动等分，避免长小数挤占版面
+ax.set_yticks(np.linspace(Y.min(), Y.max(), 6))
+ax.set_zticks(np.linspace(Z.min(), Z.max(), 5))
+ax.tick_params(labelsize=8, pad=2)                # 刻度字号小于轴标签，密集刻度仍清晰
+ax.view_init(elev=31, azim=42)                    # 俯角 31°/方位 42°：起伏与遮挡最平衡
+ax.set_box_aspect((1.18, 1.45, 0.72))             # 关键：三维框物理比例独立于数据量程，防曲面压扁/拉长
+
+for axis in (ax.xaxis, ax.yaxis, ax.zaxis):        # 三面透明 + 浅灰描边：去默认灰底，黑白打印仍有层次
+    axis.pane.set_facecolor((1, 1, 1, 0))
+    axis.pane.set_edgecolor('#d0d0d0')
+ax.grid(True, color=(0.72, 0.72, 0.72, 0.65), linewidth=0.6)
+
+cax = fig.add_axes([0.84, 0.23, 0.028, 0.48])      # 独立 colorbar 轴：窄条 + 半幅高，与曲面互不侵占
+cbar = fig.colorbar(surf, cax=cax)
+cbar.set_label('目标值', fontsize=11, labelpad=10)
+cbar.set_ticks(np.linspace(Z.min(), Z.max(), 5))
+cbar.ax.tick_params(labelsize=8)
+cbar.outline.set_linewidth(0.75)
+
+ax.set_title('参数响应曲面', fontsize=14, pad=18)
+save_fig(fig, '../figures/final/fig_3d_surface.png', vector=True)   # 300 DPI 位图 + 同步 PDF 矢量
 ```
 
 **模板2：热力图（带数值标注 + 遮罩上三角）**
