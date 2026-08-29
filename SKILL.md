@@ -1213,6 +1213,8 @@ ax.grid(axis='x', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
 #### 流程图专项规范与代码模板（第二章问题分析图 / 开发流程 / 系统架构图）
 
 > **第二章问题分析必须插入**问题分析图（流程图/技术路线/系统架构图），遵循以下专项规范。
+>
+> **本 skill 唯一内置版式 = 总分布局问题分析图**（内容 dict 驱动 + 自动正交连线 + 出图前中文字宽门禁）：模块与连线只描述"是什么关系"，坐标由程序算，改一个模块不必重画全部连接线。其余大版式见本节末「其余版式」表，按需另画。
 
 **布局逻辑**
 
@@ -1240,67 +1242,170 @@ ax.grid(axis='x', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
 - 模块内可内嵌**简约单色线性矢量图标**（芯片、文档、终端、界面、报表），与模块文字同色、置于文字上方
 - 禁用卡通 3D 图标、彩色 emoji；保持单色线性风格
 
-```python
-# ===== 流程图/架构图模板（第二章问题分析图） =====
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+**容量预算（出图前必算，非事后补救）**
 
-# 模块类型样式（学术低饱和工程美学）：核心算法浅蓝 / 配置辅助极淡灰虚线 / 输出浅灰蓝
-STYLE = {
-    'algo':   dict(facecolor='#D6E4F0', edgecolor='#4C72B0', linestyle='-',  hatch=None,  textcolor='#2F353B'),
-    'config': dict(facecolor='#F5F5F5', edgecolor='#8E9AAF', linestyle='--', hatch=None,  textcolor='#2F353B'),
-    'output': dict(facecolor='#EBF2FA', edgecolor='#4C72B0', linestyle='-',  hatch=None,  textcolor='#2F353B'),
+- 图内文字一律中文（见「全局视觉统一 · 图内文字语言」）；宽度口径：**汉字 ≈ 字号 px、半角字符（字母/数字/空格）≈ 字号/2、行高 ≈ 字号 + 3**
+- 每行汉字数 ≤ `(盒宽 − 8) // 字号`，总行数 ≤ `(盒高 − 8 − 22×有图标) // (字号 + 3)`；用 `\n` 手动断行，**禁止依赖自动折行**
+- 字号 ≥12.5 px（≈9 pt 红线）；行数放不下就**拆模块**，而不是缩字号硬塞
+- 下方模板在写文件前逐槽校验，超框即报「槽位 + 需宽 + 可用宽 + 每行汉字数」并终止出图（`SystemExit(2)`）——不允许产出压字的图
+
+**连线纪律**
+
+- 端点离盒边 1 px（紧贴边线视觉上像被框吞掉）；进出点一律取四边中点，由 `from_side`/`to_side` 指定，默认「下出上入」
+- 一分多 / 多合一画成**竖线 + 横母线 + 分支**（同组分支共用一条汇流横线即自动成母线），禁止画成 N 条独立斜线
+- **严禁斜线直连与横穿模块**；有遮挡风险时用 `via` 给中间拐点手动绕行
+
+```python
+# ===== 问题分析流程图 / 系统架构图模板（第二章问题分析图，内容 dict 驱动） =====
+# 画布口径：1 px = 0.01 inch，y 轴向下（越靠下 y 越大），与字宽预算同一单位
+from math import hypot
+import unicodedata
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.figure import Figure
+from matplotlib.patches import FancyBboxPatch, Polygon
+from plot_style import save_fig          # 统一保存入口；中文字体已由其探测配置
+
+FS, ICON_H, RADIUS = 16, 22, 5           # 字号 / 图标行占位 / 圆角（px）；16 px ≈ 11.5 pt
+TXT, GREY, DASH = '#2F353B', '#8E9AAF', (0, (3, 3))
+STYLE = {'algo':   dict(fill='#D6E4F0', stroke='#4C72B0', ls='solid'),   # 核心算法/处理单元
+         'config': dict(fill='#F5F5F5', stroke=GREY, ls=DASH),           # 配置/数据/辅助
+         'output': dict(fill='#EBF2FA', stroke='#4C72B0', ls='solid')}   # 输出成果
+
+def text_width(s, fs=FS):
+    """一行文字的像素宽：汉字/全角 = 字号，半角 = 字号/2 —— 超框判断的唯一依据"""
+    return sum(fs if unicodedata.east_asian_width(c) in 'WF' else fs / 2 for c in str(s))
+
+def lines_of(v):
+    return [''] if v is None else ([str(x) for x in v] if isinstance(v, (list, tuple))
+                                   else str(v).split('\n'))
+
+def check_module(m, fs, W, H, problems):
+    """出图前门禁：宽度/高度/越界三类逐槽记录，攒够一起报，免得改一处跑一次"""
+    ls = lines_of(m['text'])
+    for ln in ls:
+        need = text_width(ln, fs)
+        if need > m['w'] - 8:
+            problems.append(f"{m['id']}.text：「{ln[:10]}…」需 {need:.0f}px > 可用 {m['w']-8:.0f}px"
+                            f"（每行 ≤{int((m['w']-8)//fs)} 汉字）")
+    hneed = len(ls) * (fs + 3) + (ICON_H if m.get('icon') else 0) + 8
+    if hneed > m['h']:
+        problems.append(f"{m['id']}.text：{len(ls)} 行需高 {hneed:.0f}px > 盒高 {m['h']:g}px")
+    if m['x'] < 0 or m['y'] < 0 or m['x'] + m['w'] > W or m['y'] + m['h'] > H:
+        problems.append(f"{m['id']}：越出画布 {W:g}×{H:g}")
+
+def setup_canvas(w, h):
+    fig = Figure(figsize=(w / 100, h / 100), dpi=100)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, w); ax.set_ylim(h, 0); ax.axis('off')     # y 轴向下
+    return fig, ax
+
+def draw_box(ax, m, fs):
+    """圆角扁盒 + 居中多行文字（可选单色线性图标行）；配色只由 kind 决定，勿逐盒手写"""
+    s = STYLE[m['kind']]
+    r = min(RADIUS, m['w'] / 2, m['h'] / 2)
+    ax.add_patch(FancyBboxPatch((m['x'], m['y']), m['w'], m['h'],
+        boxstyle=f'round,pad=0,rounding_size={r}', linewidth=1.2,
+        edgecolor=s['stroke'], linestyle=s['ls'], facecolor=s['fill'], zorder=2))
+    top, box_h = m['y'], m['h']
+    if m.get('icon'):
+        ax.text(m['x'] + m['w']/2, m['y'] + 4 + ICON_H/2, m['icon'], ha='center',
+                va='center', fontsize=fs + 2, color=TXT, zorder=3)
+        top, box_h = m['y'] + ICON_H, m['h'] - ICON_H - 4
+    ax.text(m['x'] + m['w']/2, top + box_h/2, '\n'.join(lines_of(m['text'])),
+            ha='center', va='center', fontsize=fs, color=TXT, fontweight='bold',
+            linespacing=(fs + 3) / fs, zorder=3)
+
+def anchor(m, side):
+    """出/入锚点 = 该边中点外移 1 px（端点压在框线上，视觉上像被框吞掉）"""
+    cx, cy = m['x'] + m['w']/2, m['y'] + m['h']/2
+    return {'top': (cx, m['y']-1), 'bottom': (cx, m['y']+m['h']+1),
+            'left': (m['x']-1, cy), 'right': (m['x']+m['w']+1, cy)}[side]
+
+def route(p0, s0, p1, s1, via=None):
+    """两点 + 出入方向 → 正交折线：垂出垂入走「垂-平-垂」，同列直连；via 非空则全接管"""
+    if via:
+        return [p0] + [(float(a), float(b)) for a, b in via] + [p1]
+    x0, y0 = p0; x1, y1 = p1
+    v0, v1 = s0 in ('top', 'bottom'), s1 in ('top', 'bottom')
+    if v0 and v1:
+        return [p0, p1] if abs(x0-x1) < 0.5 else [p0, (x0, (y0+y1)/2), (x1, (y0+y1)/2), p1]
+    if not v0 and not v1:
+        return [p0, p1] if abs(y0-y1) < 0.5 else [p0, ((x0+x1)/2, y0), ((x0+x1)/2, y1), p1]
+    return [p0, (x0, y1), p1] if v0 else [p0, (x1, y0), p1]
+
+def arrow_head(ax, p_from, p_to, size, color):
+    dx, dy = p_to[0] - p_from[0], p_to[1] - p_from[1]
+    n = hypot(dx, dy)
+    if n == 0:
+        return
+    ux, uy = dx/n, dy/n
+    L, hw = max(size, 1.6), 0.45 * size
+    bx, by = p_to[0] - ux*L, p_to[1] - uy*L
+    ax.add_patch(Polygon([(bx-uy*hw, by+ux*hw), p_to, (bx+uy*hw, by-ux*hw)], closed=True,
+        facecolor=color, edgecolor=color, linewidth=0.6, joinstyle='miter', zorder=6.5))
+
+def draw_edge(ax, m0, m1, primary=True, s0='bottom', s1='top', via=None):
+    """主流程=炭墨实线，次要数据流=岩石灰虚线；整条折线一次 plot，虚线节奏才连续"""
+    pts = route(anchor(m0, s0), s0, anchor(m1, s1), s1, via)
+    color, ls = (TXT, 'solid') if primary else (GREY, DASH)
+    ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, linewidth=1.2,
+            linestyle=ls, zorder=6, solid_capstyle='butt')
+    arrow_head(ax, pts[-2], pts[-1], 6, color)
+
+# ---- 内容源：只写"有哪些模块、谁指向谁"，折线坐标交给 route 自动算 ----
+CONTENT = {
+    'canvas': {'w': 800, 'h': 650}, 'font_size': FS, 'title': '问题分析流程图',
+    'modules': [   # x/y 为盒左上角；并行分支同宽同高、列位均分（此例两列 x=80/440，宽 280）
+        {'id': 'prep',   'text': '数据预处理',             'kind': 'config', 'x': 250, 'y': 56,  'w': 300, 'h': 70},
+        {'id': 'algo_a', 'text': '算法模块A\n（子问题一）', 'kind': 'algo',   'x': 80,  'y': 250, 'w': 280, 'h': 110},
+        {'id': 'algo_b', 'text': '算法模块B\n（子问题二）', 'kind': 'algo',   'x': 440, 'y': 250, 'w': 280, 'h': 110},
+        {'id': 'out',    'text': '结果输出',               'kind': 'output', 'x': 250, 'y': 470, 'w': 300, 'h': 70},
+    ],
+    'edges': [     # 默认「下出上入」；一分多/多合一共用中线 → 自动成竖线+横母线+分支
+        {'from': 'prep', 'to': 'algo_a'}, {'from': 'prep', 'to': 'algo_b'},
+        {'from': 'algo_a', 'to': 'out'},  {'from': 'algo_b', 'to': 'out'},
+        {'from': 'out', 'to': 'algo_b', 'primary': False,        # 参数反馈：右侧绕行虚线
+         'from_side': 'right', 'to_side': 'right', 'via': [[780, 505], [780, 305]]},
+    ],
 }
 
-def draw_box(ax, x, y, w, h, text, kind='algo', icon=''):
-    """统一圆角 3–5pt 扁平化方框：无直角、无立体效果；icon 为单色线性图标字符（可选，显示于模块上部）"""
-    s = STYLE[kind]
-    ax.add_patch(FancyBboxPatch(
-        (x, y), w, h,
-        boxstyle='round,pad=0.02,rounding_size=0.05',   # 圆角半径（≈3–5pt）
-        facecolor=s['facecolor'], edgecolor=s['edgecolor'],
-        linestyle=s['linestyle'], linewidth=1.2, hatch=s['hatch']))
-    if icon:
-        ax.text(x + w/2, y + h*0.76, icon, ha='center', va='center',
-                fontsize=13, color=s['textcolor'])          # 单色线性图标置于模块上部
-        ax.text(x + w/2, y + h*0.38, text, ha='center', va='center',
-                fontsize=10, color=s['textcolor'])
-    else:
-        ax.text(x + w/2, y + h/2, text, ha='center', va='center',
-                fontsize=10, color=s['textcolor'])
+def render(content):
+    W, H = content['canvas']['w'], content['canvas']['h']
+    fs = float(content.get('font_size', FS))
+    mods = {m['id']: m for m in content['modules']}
+    problems = []
+    for m in mods.values():
+        check_module(m, fs, W, H, problems)
+    if problems:                        # 门禁：超框就不出图，改文案或加大盒子后重跑
+        print(f'✗ 容量检查未通过（{len(problems)} 处超框）：')
+        for p in problems:
+            print('  -', p)
+        raise SystemExit(2)
+    fig, ax = setup_canvas(W, H)
+    for m in mods.values():
+        draw_box(ax, m, fs)
+    for e in content['edges']:
+        draw_edge(ax, mods[e['from']], mods[e['to']], e.get('primary', True),
+                  e.get('from_side', 'bottom'), e.get('to_side', 'top'), e.get('via'))
+    if content.get('title'):
+        ax.text(W/2, fs + 8, content['title'], ha='center', va='center',
+                fontsize=fs, color=TXT, fontweight='bold')
+    return fig
 
-def draw_arrow(ax, x1, y1, x2, y2, primary=True):
-    """连接线从模块侧边中点进出；主流程=实心深灰箭头，次要数据流=灰色虚线箭头"""
-    ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2),
-        arrowstyle='-|>', mutation_scale=14, linewidth=1.2,
-        color='#2F353B' if primary else '#8E9AAF',
-        linestyle='-' if primary else '--'))
-
-fig, ax = plt.subplots(figsize=(8, 6.5))
-ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis('off')
-
-# 总分结构：顶层居中 → 并行分支均分多列、严格对齐 → 底层收拢
-draw_box(ax, 3.0, 8.2, 4.0, 1.0, '数据预处理', 'config')      # 浅灰虚线边框
-draw_box(ax, 1.0, 5.2, 3.0, 1.0, '算法模块A', 'algo')         # 纯色填充（核心算法）
-draw_box(ax, 6.0, 5.2, 3.0, 1.0, '算法模块B', 'algo')
-draw_box(ax, 3.0, 2.2, 4.0, 1.0, '结果输出', 'output')        # 浅灰蓝填充（输出成果）
-
-# 串行自上而下 + 正交折线：侧边中点进出，不横穿模块
-ax.plot([5.0, 5.0], [8.2, 7.0], color='#2F353B', linewidth=1.2)   # 顶层底边中点垂直向下
-ax.plot([2.5, 7.5], [7.0, 7.0], color='#2F353B', linewidth=1.2)   # 水平分流线
-for cx in (2.5, 7.5):
-    draw_arrow(ax, cx, 7.0, cx, 6.2)    # 主流程：进入各分支顶边中点
-    draw_arrow(ax, cx, 5.2, cx, 4.2)    # 分支底边中点出，向收拢线汇聚
-ax.plot([2.5, 7.5], [4.2, 4.2], color='#2F353B', linewidth=1.2)   # 水平收拢线
-draw_arrow(ax, 5.0, 4.2, 5.0, 3.2)      # 主流程：进入底层顶边中点
-# 次要数据流（参数反馈）：正交折线——从"结果输出"右边中点(7.0, 2.7)出发，先平后垂，
-# 进入"算法模块B"底边中点(7.5, 5.2)，末段用灰色虚线箭头（严禁斜线直连或起点悬空）
-ax.plot([7.0, 7.5], [2.7, 2.7], color='#8E9AAF', linewidth=1.2, linestyle='--')
-draw_arrow(ax, 7.5, 2.7, 7.5, 5.2, primary=False)
-
-ax.set_title('问题分析流程图', fontsize=12, pad=10)
-plt.savefig('../figures/final/fig1_flow_q_overview.png', dpi=300, bbox_inches='tight')
+save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=True)  # PNG 300DPI + 矢量 PDF
 ```
+
+**其余版式（按需另画，本 skill 不内置代码）**
+
+| 版式 | 何时改用 | 一句话要点 |
+| :--- | :--- | :--- |
+| 五带技术路线图 | 想用一张图承载全文脉络：破题 → 数据与指标 → 方法与机制 → 结果对比 → 评价推广 | 竖版五带 + 左旗标右竖排标签；带序即叙事序，语义放错比超框严重 |
+| 三栏研究框架图 | 展示"每个阶段做哪些研究内容、各用什么方法"的内容全景 | 左阶段链 / 中内容块 / 右方法清单，高度自适应 |
+| 三栏阶段流程图 | 强调执行流程推进、决策分支与成果分发 | 中栏实色标题条 + 每块独立色系 |
+| 横版任务流水线图 | 课题拆成任务一…任务四、每步挂做法细节，或答辩用 16:9 整页 | 横版多任务块，块内步骤流水线 |
+
+四者沿用同一套圆角扁盒、三类模块配色与正交连线纪律；若已安装 `mathmodel-diagram` 技能可直接套其模板，否则按本节规范用同一批基元手画。竖版大画布（宽 ≥900 px）压到 A4 单栏会掉到 7 pt 以下，须整页横排或另做精简版。
 
 > 复杂系统架构图（模块多、层级深）可选用 graphviz（`pip install graphviz`），但需保持同一套样式规范（圆角扁平方框、纹理区分、深灰主箭头、单色线性图标）。
 

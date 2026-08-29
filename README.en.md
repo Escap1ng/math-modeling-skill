@@ -140,7 +140,7 @@ The dependencies below are auto-checked in Stage 0; missing ones are installed a
 - **Academic low-saturation palette** — seaborn deep style, warm-cool dual axis plus redundant encoding (line style + markers); jet / rainbow / pure black banned; legible in grayscale printing
 - **Figure count** — at least one color figure per sub-question; 6+ recommended for the whole paper (minimum 4); a problem-analysis flowchart / technical-route diagram is mandatory in chapter two
 - **Unified style module** — palette, colormaps, hatches, sizes, and the save entry point defined once in `plot_style.py`; preview figures match final quality
-- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, rounded flat-style flowchart
+- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate)
 
 ---
 
