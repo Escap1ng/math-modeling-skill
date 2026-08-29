@@ -38,7 +38,7 @@ The skill itself is a single Markdown file (`SKILL.md`) — installed by copying
 | Single-file skill | The whole skill is one Markdown file (`SKILL.md`) — no plugins, no scripts; copy and go, readable and easy to customize |
 | Dual-format paper | PDF and Word produced in one run (xelatex + pandoc, formulas as native OMML math) with no re-typesetting — most comparable setups deliver only a single Markdown or PDF alone |
 | Curated algorithm library | Basic numerical methods, classical & heuristic optimization, graph & network, machine learning, statistics, evaluation, physics modeling, and frontier methods |
-| Publication-grade figures | Academic low-saturation palette, ≥300 DPI, unified style module `plot_style.py`, built-in templates for 3D surfaces, heatmaps, Pareto fronts, and more |
+| Publication-grade figures | Nature three-role palette (identity / direction / hierarchy), ≥300 DPI, unified style module `plot_style.py`, built-in templates for 3D surfaces, heatmaps, Pareto fronts and problem-analysis flowcharts |
 | Award-level formatting | A4 with 2.5cm margins, three-line tables, GB/T 7714 references, anonymity as a one-strike rule |
 | Quality loop | Five-dimension 0–100 scoring, ≥85 to finalize, 3-round circuit breaker against infinite iteration |
 
@@ -137,10 +137,11 @@ The dependencies below are auto-checked in Stage 0; missing ones are installed a
 ## Visualization Standards
 
 - **Publication quality** — ≥300 DPI (200 allowed for density plots); vector PDF preferred for line / bar charts
-- **Academic low-saturation palette** — seaborn deep style, warm-cool dual axis plus redundant encoding (line style + markers); jet / rainbow / pure black banned; legible in grayscale printing
+- **Nature three-role color** — color carries exactly three duties: identity (hero blue first), direction (red/green only for signed change, always with ↑/↓), hierarchy (`TONE_RAMP` lightness); baselines stay grey; jet / rainbow / pure black / hard-coded hex banned; legible in grayscale
 - **Figure count** — at least one color figure per sub-question; 6+ recommended for the whole paper (minimum 4); a problem-analysis flowchart / technical-route diagram is mandatory in chapter two
-- **Unified style module** — palette, colormaps, hatches, sizes, and the save entry point defined once in `plot_style.py`; preview figures match final quality
-- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate)
+- **Unified style module** — palette, colormaps, hatches, three standard sizes, the font scale, and style helpers (`style_axes` / `annotate_bars` / `delta_annotation`) defined once in `plot_style.py`; preview figures match final quality
+- **The library is not the boundary** — figure type follows the data and the conclusion being argued; drawing beyond the templates is encouraged, while style stays fixed: one shared set of constants plus a pre-registered method→color map for cross-figure consistency
+- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate); advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the 20 templates of `mathmodel-figure` as a supplement
 
 ---
 

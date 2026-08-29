@@ -765,7 +765,7 @@ restyle_word_paper()
 - **第二章问题分析必须插入问题分析图**：至少1张流程图/技术路线/系统架构图，展示整体解决思路（绘制规范详见第 4 章"流程图专项规范"）
 - **全文图片数量**：建议全文6张以上，保底不低于4张；同一小问有必要时可多插入几张（如多组对比、多阶段结果）
 - **插入位置合适**：图片须紧邻其对应分析文字就近插入（图题在图下方），随分析段落"边叙述边配图"或"先分析后配图"，**禁止**把所有图片集中堆放在章节末尾或文末；每张图前后必须有文字引导与解读，禁止图表孤立出现
-- **图型跟随数据结构，匹配时优先高端效果**：图表类型由数据结构与表达目标决定；数据适用时优先采用三维曲面图、热力图、等高线图、网络/关系图、平行坐标图等高级优质图表提升表现力（详见下方推荐图表类型表）；基础图型（折线/柱状/饼）仍是表达主力，禁止为视觉效果强行升级图型（如收敛曲线强改三维曲面）
+- **图型跟随数据结构，匹配时优先高端效果**：图表类型由数据结构与表达目标决定；数据适用时优先采用三维曲面图、热力图、等高线图、网络/关系图、平行坐标图等高级优质图表提升表现力（详见下方推荐图表类型表与「图型创新与跨图统一」）；**图库不是边界**——表内与模板覆盖不到的图型按结论需要现绘，不必硬套最接近的模板；基础图型（折线/柱状/饼）仍是表达主力，禁止为视觉效果强行升级图型（如收敛曲线强改三维曲面）
 - **组合图规范**：双轴图（同一主题的多量纲指标同图，如左右轴分别表示数值与占比/速率）**可以使用**；**禁止将多张不相干图硬凑成组合图**——多子图组合仅限同主题的关联子图（如拟合图+残差图、多方法对比），每个子图须在正文中分别解读
 - **图内文字防重叠**：图例不遮挡数据（frameon=False 或指定位置）；坐标轴标签过长时旋转/换行；数据点标注自动避让（offset/bbox/adjustText）；密集数据仅标注关键点，禁止文字互相重叠遮挡
 - **拟合结果必须可视化**：拟合曲线 vs 原始数据
@@ -810,57 +810,152 @@ restyle_word_paper()
 | 堆叠面积图           | 多序列占比随时间变化           | ★★★★ | matplotlib / plotly |
 | 甘特图              | 任务排程、关键路径结果展示          | ★★★★ | matplotlib（broken_barh/barh） |
 | 龙卷风图            | 参数敏感性分析（单因素扰动影响排序）   | ★★★★ | matplotlib          |
+| 泰勒图              | 多模型综合评价（相关系数与 RMSE 同图）  | ★★★★★ | matplotlib          |
+| 云雨图（raincloud）  | 配对分布 + 个体观测 + 均值趋势          | ★★★★★ | matplotlib / seaborn |
+| 交叉验证 ROC 图       | 分类器性能与折间置信带                 | ★★★★  | scikit-learn / matplotlib |
+| SHAP 重要性组合图     | 特征重要性（柱状总览 + 蜂群细节）       | ★★★★★ | shap / matplotlib   |
+| 环形热图            | 分组周期/时段数据强度矩阵               | ★★★★  | matplotlib          |
+| 和弦图              | 实体间流量与关联结构                    | ★★★★  | matplotlib / plotly |
+| 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
+| 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
 
-> 基础图型（折线/柱状/箱线/饼/条形）的逐项绘制规范与代码模板见下文「基础图型绘制规范与代码模板」。
+> 上述 8 类本 skill 无内置代码模板：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
+
+> 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范与代码模板见下文「基础图型绘制规范与代码模板」。
+
+#### 图型创新与跨图统一（图库不是边界）
+
+> **选图自由、样式零自由**：图型可以大胆创新，但色、字号、尺寸、坐标框架、图题口径必须全部收敛到 `plot_style.py` 与下面的统一契约。
+
+**选图原则**
+
+- 图型由**数据结构与要论证的结论**决定；上表与内置模板只是加速器，**不是边界**——覆盖不到就现绘
+- **禁止为套用模板而改数据语义**，禁止把不相干的图硬凑成多子图；也禁止为视觉效果强行升级图型（收敛曲线不改成三维曲面）
+- 数据适合时就大胆用更有表现力的图型：等高线+填充、相图/零净增长线、平行坐标、small multiples 小多图、双轴组合、和弦/桑基、龙卷风、差值双柱、脊线图、瀑布图、甘特图、地图热力
+- 拿不准就回到唯一判据：**这张图要证明什么**；一句话说不出来，就不该画
+
+**六条硬标准**（模板库外现绘逐条满足）
+
+1. 样式来源唯一：`from plot_style import ...`，脚本内不写 hex 色值、不写裸字号
+2. 坐标框架一律 `style_axes()`；数值轴从 0 起，不误导性截断
+3. 颜色只承担身份/方向/层级三职责（见「Nature 风格配色」四条不变式）
+4. 文字最少且可读：禁 mathtext 与中文混排；系列 ≤5 优先线尾/条端直接标注取代图例
+5. 证据完整：置信带、误差棒、`R²`/RMSE/n 该显示就显示；显示每一次观测，别只画均值
+6. 出图后必看渲染产物（自检项见第 7 章清单）——代码跑通不等于图没问题
+
+**跨图风格统一契约**（全文强制，创新图不豁免）
+
+- **先登记再画图**：动笔前定一张方法-颜色对照（本文方法=主角蓝、对照方法=橙/紫/青、基准=灰、背景/种群=浅调），全文每张图（含模板图与现绘图）一律按这张表取色
+- 模板图与现绘图共用同一套 `plot_style.py` 常量，**视觉差只允许来自图型本身**
+- 尺寸与字号只取 `FIG_FULL/FIG_TALL/FIG_SQUARE` 与 `FS_*`，不允许"这张图字大一点"
+- 色相超过 6 个说明图型选错了：改分图或热图，而不是继续加色
+- 图题口径一致：一句话写结论，不写绘制过程
+
+**现绘最小骨架**（复制到 `code/qX_custom.py` 后只改数据与图型，其余不动）
+
+```python
+from plot_style import (COLOR_BASELINE, COLOR_MAIN, FILL_ALPHA, FIG_FULL, FS_ANNOT,
+                        FS_LABEL, save_fig, style_axes)
+
+rng = np.random.default_rng(2026)              # 种子固定，结果可复现
+x = np.linspace(0, 10, 60)
+y_main = np.abs(np.sin(x)) + rng.normal(0, 0.08, x.size)
+
+fig, ax = plt.subplots(figsize=FIG_FULL)       # 尺寸取自 plot_style，勿手写
+ax.fill_between(x, y_main - 0.15, y_main + 0.15, color=COLOR_MAIN, alpha=FILL_ALPHA,
+                label='±1σ 区间', zorder=2)     # 不确定度该给就给
+ax.plot(x, y_main, color=COLOR_MAIN, linewidth=2.2, label='本文方法', zorder=4)
+ax.plot(x, 0.6 * np.abs(np.cos(x)), color=COLOR_BASELINE, linewidth=1.4, linestyle='--',
+        label='基准', zorder=3)                  # 基准永远是灰
+ax.text(x[-1], y_main[-1], ' 本文方法', color=COLOR_MAIN, fontsize=FS_ANNOT,
+        va='center')                            # 系列 ≤5：直接标注取代图例
+ax.set_xlabel('自变量 x')
+ax.set_ylabel('目标值 y')                       # 轴标注物理含义 + 单位，禁 mathtext 混排中文
+ax.set_xlim(0, x.max() * 1.18)                  # 右侧留直接标注位，文字不被裁掉
+ax.set_ylim(0, None)                            # 性能类数值轴从 0 起
+style_axes(ax, grid='y')                        # 坐标框架统一
+ax.set_title('图题写结论，不写绘制过程', fontsize=FS_LABEL)
+save_fig(fig, '../figures/final/figX_custom.png', vector=True)
+```
+
+多子图主次分明用 `gs = fig.add_gridspec(2, 2, width_ratios=[1.5, 1], hspace=0.45, wspace=0.3)` + `add_panel_label(ax, 'a')`：hero 面板不得与陪衬等大，每个子图回答一个**唯一**问题，同指标子图共享上下限（`sharey=True`）。
+
+**反哺规则**：同一图型在论文里出现 ≥2 次、或属竞赛高频图型，就按模板 1–5 的写法把它登记进下文「高频图表代码模板」，后续复用而不是每次现绘。
 
 #### 高级图表配色要点
 
-- **散点/气泡图**：普通点主色A α0.6（重叠加深体现密度）；离群点/关键解用赭橙 `#DD8452` + 炭墨黑细描边并放大；气泡大小→颜色越深（不透明度随尺寸升高）；叠加拟合线用绛红虚线（冷暖对比）
-- **雷达图**：填充主色A α0.2（极淡不遮网格）；轮廓主色A 2pt 实线；对比模型绛红虚线、填充 α0.1；网格线极淡灰 `#E0E0E0`
-- **桑基图**：节点用主色A/绛红/苔绿实心；连线（流量）半透明 0.4-0.6 且**颜色继承起始节点**，便于追踪流量归属
-- **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层单色顺序色系（主色A 浅蓝→深蓝）；**禁红绿配色**（色盲不友好）
-- **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3-0.5；按类别着主色A/绛红/苔绿；图例置于图外防重叠
+- **散点/气泡图**：单系列主角蓝 `COLOR_MAIN` α0.5–0.6（重叠自然加深体现密度）；离群点/关键解用 `ACCENT_ORANGE` + 白描边并放大；多系列按 `identity_color(i)` 取色；叠加拟合线用主角蓝加粗
+- **雷达图**：填充主角蓝 α0.2（极淡不遮网格）；轮廓主角蓝 2pt 实线；对比模型取次系列身份色虚线、填充 α0.1；网格线 `NEUTRAL_LIGHT`
+- **桑基图/和弦图**：节点按身份色序列着色；连线（流量）半透明 0.4–0.6 且**颜色继承起始节点**，便于追踪流量归属
+- **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层用 `SEQUENTIAL_CMAP` 单色顺序系；**禁红绿配色**（色盲不友好）
+- **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3–0.5；按类别取 `identity_color(i)`；图例置于图外防重叠
 
-#### 现代学术配色方案（必须使用）
+#### Nature 风格配色（必须使用）
 
-**统一配色逻辑（顶会风格学术低饱和色板）**：
+**统一原则**：颜色只承担三种职责——**身份**（这是哪个方法/哪条系列）、**方向**（升还是降）、**层级**（主证据还是支持信息）；纯装饰性用色一律禁止。同时兼顾区分度、色盲友好、印刷一致性与黑白打印层次。
 
-- **原则**：采用 seaborn deep 学术色板——顶会论文与数模国赛获奖论文常见的低饱和方案；蓝-橙冷暖为主轴、紫/青为辅，中低饱和、黑白打印有层次。
-- **角色分工**：定性系列色 `LINE_PALETTE`（学术蓝/绛红/苔绿/岩石灰）；强调色 `COLOR_ACCENT` 绛红（中位线/误差/负向）；中性色 `COLOR_ROCK`（离群点/次要线）；墨色 `COLOR_INK`（文字/轴线/浅底图内文字）；顺序色图 `SURFACE_CMAP` 学术蓝单色渐变；发散色图 `DIVERGENT_CMAP` 蓝→灰白→绛红（亮中心，打印友好）。
-- **冗余编码**：折线图须线型+标记冗余；柱状图柱顶数值标注；保障色盲与黑白打印场景可辨。
+| 职责 | 常量 | 值 | 用法 |
+| :--- | :--- | :--- | :--- |
+| 身份·主角 | `COLOR_MAIN` | `#1A6FC4` | 本文方法/主系列，**每张图的同一含义固定不变** |
+| 身份·同族 | `COLOR_MAIN_LIGHT` / `COLOR_MAIN_PALE` | `#5B9BD5` / `#B4D4F0` | 主系列变体、支持信息 |
+| 身份·次系列 | `ACCENT_ORANGE` / `ACCENT_PURPLE` / `ACCENT_TEAL` / `ACCENT_CORAL` / `ACCENT_LAVENDER` | `#E28E2C` / `#7B5FD6` / `#33B5A5` / `#D9544D` / `#B89BD9` | 按序取用 `identity_color(i)`，第 0 个恒为主角蓝 |
+| 基准 | `COLOR_BASELINE` / `COLOR_BASELINE_DARK` | `#767676` / `#4D4D4D` | 对照/参考/均值线，**永远是灰** |
+| 方向 | `COLOR_POSITIVE` / `COLOR_NEGATIVE` | `#2E9E44` / `#E53935` | **只用于有正负的变化量**（差值、增益、损失） |
+| 中性 | `NEUTRAL_BG` / `NEUTRAL_LIGHT` / `NEUTRAL_MID` / `NEUTRAL_DARK` / `COLOR_INK` | `#F5F5F5` / `#D8D8D8` / `#A8A8A8` / `#606060` / `#333333` | 底色、网格、次要文字、轴线、正文与标题 |
+| 层级 | `TONE_RAMP` / `tint()` | 主角蓝 → 中调 → 浅调 → 中性灰 | 排名与主次：深=主证据，浅=陪衬（同族降饱和，不另立色板） |
+| 色图 | `DIVERGENT_CMAP` / `SEQUENTIAL_CMAP` | 蓝→浅灰→珊红 / 浅→主角蓝 | 发散矩阵与响应曲面 / 单极数据与黑白打印变体 |
 
-**核心原则**：配色需兼顾**区分度、色盲友好、印刷一致性、黑白打印有层次**；采用学术低饱和色调，避免高饱和原色。色板常量（`COLOR_*`/`LINE_PALETTE`/`SURFACE_CMAP`/`DIVERGENT_CMAP`）的唯一定义见下方 `code/plot_style.py`，禁止在脚本中另行定义。
+**四条不变式**（跨图、跨子图都必须成立）：
 
-> **统一封装**：以上色板/纹理/标准尺寸已统一封装于 `code/plot_style.py`（见下），正式出图一律 `from plot_style import ...` 引用，避免多处定义漂移。
+1. **同一方法同一颜色**：某方法在子图 a 是主角蓝，在 b、c、d 与另一张图里仍是主角蓝，不为"更醒目"而改色
+2. **基准恒为灰**：等权重、移动平均、贪心基线等一切参照对象取 `COLOR_BASELINE`；不得用灰色画主角、用亮色画基准
+3. **红绿只留给方向**：绿=变好/上升、红=变差/下降，且须同时给出 `↑`/`↓` 与正负号做冗余编码（`delta_annotation()` 直接产出文本与颜色）；表达"类别身份"改用蓝/橙/紫/青——得分 0.8 的模型不是"绿色"，而是"主角蓝"
+4. **饱和与明度编码层级**：主结果用全饱和，支持信息降饱和或走 `TONE_RAMP`；系列超过 6 个色相说明图型选错了，改分图或热图，而不是继续加色
 
-> **双色板分工（统一口径，防止硬编码漂移）**：多系列/多方法对比一律用 `LINE_PALETTE`（学术蓝/绛红/苔绿/岩石灰）；单一主题内部的子分组区分（分组柱状图组内、饼图扇区）用其降饱和衍生色板（`['#7F99C5', '#D38083', '#B7CAE4', '#E5BFC0']`，见「基础图型绘制规范」），两套不在同一图内混用；模板代码禁止在这两套之外硬编码颜色（历史漂移教训：模板代码曾误重复绛红）。
+**常见误用 → 修正**：
+
+| 误用 | 修正 |
+| :--- | :--- |
+| 同一方法在各子图里颜色不同 | 一个方法一个颜色，全篇复用 |
+| 用红绿区分"方法A / 方法B" | 身份用蓝/橙/紫，红绿只标增减 |
+| 所有柱等亮等饱和、看不出主次 | 主角全饱和，陪衬走 `TONE_RAMP` |
+| 灰色画主结果、亮色画基线 | 反过来：主角取强色，基线取灰 |
+| 图例色块占掉三成版面 | 直接标注在线尾/条端，或把图例移到图下方 |
+
+> **唯一定义**：以上色板/色图/纹理/尺寸/字号常量的唯一出处是下方 `code/plot_style.py`，正式出图一律 `from plot_style import ...` 引用；**禁止在脚本里硬编码十六进制色值或裸字号**（历史漂移教训：模板代码曾误重复绛红、字号各处手写 7.5/9/10 不一致）。
 
 **禁用配色**：
 
-- ❌ 纯黑 `#000000`（一律用炭墨黑 `#2F353B`，更柔和高级）
-- ❌ 纯红 `#FF0000` + 纯绿 `#00FF00` 组合（色盲不友好）
+- ❌ 纯黑 `#000000`（一律 `COLOR_INK` `#333333`，更柔和高级）
+- ❌ 纯红 `#FF0000` + 纯绿 `#00FF00` 作系列配色（色盲不友好；红绿只按方向色规则出现）
 - ❌ `rainbow` / `jet` 色图（感知不均匀，学术禁用）
-- ❌ 超过6种高饱和色同时出现
+- ❌ 超过 6 种高饱和色同时出现
+- ❌ 在绘图脚本里硬编码 hex 色值（改色请改 `plot_style.py`）
 
 **纹理编码（可选，非默认）**：
 
-- 基础图表（分组柱状/饼/条形）**不默认添加斜线/圆点纹理**，靠学术低饱和配色 + 灰阶明暗区分
-- 多组年份对比等场景确需区分时，可用透明度或纹理（横线 `---`、竖线 `|||`）
-- 若使用纹理：柱体/扇区 `edgecolor` 统一岩石灰 `#8E9AAF`、`linewidth=0.8`（纹理序列常量 `HATCH_SEQUENCE` 见 plot_style.py）
+- 基础图表（分组柱状/环形/条形）**不默认添加斜线/圆点纹理**，靠身份色 + `TONE_RAMP` 明度阶梯区分
+- 多组年份对比等确需区分时，可用透明度或纹理（横线 `---`、竖线 `|||`，序列常量 `HATCH_SEQUENCE`）
+- 若使用纹理：柱体/扇区 `edgecolor` 统一**白色**、`linewidth=0.8`（Nature 分隔口径）
 
 #### 全局视觉统一（全文图表强制）
 
-- **主色一致**：全文所有图表主色统一——图1 用蓝色代表"模型A"，图5 中"模型A"必须仍是蓝色（跨图图例一致性）
+- **主色一致**：全文所有图表主色统一——图1 用主角蓝代表"模型A"，图5 中"模型A"必须仍是主角蓝（`identity_color(0)` 恒为主角蓝，跨图图例一致）
 - **图内文字语言**：用户未明确说明时，图中标题、坐标轴标签、图例、colorbar 标签、注解**一律中文**（专业术语用「中文（缩写）」形式，如「决定系数（R²）」「均方根误差（RMSE）」，单位用国际符号 cm/kg/℃）；仅当明确要求全英文时才整体改用英文。同一篇论文内所有图表语言必须统一，禁止中英混排（如中文标题配英文图例）
-- **字体**：图表内西文/数字用 Arial 或 Times New Roman、中文 SimHei，字号 8-10pt（比正文略小但清晰）
-- **去噪**：删除无意义背景色/过粗边框/阴影；去上右 spine；留白是高级感的来源
+- **禁 mathtext 与中文混排**：`"问题规模 $n$（个）"` 这类写法会让中文退化成方框（mathtext 段不做字体回退）；要么写纯文本 `"问题规模 n（个）"`，要么整串都用公式
+- **字体与字号**：西文/数字 Arial（缺则 Helvetica/Liberation Sans，最终兜底 DejaVu Sans），中文 Microsoft YaHei → SimHei → Noto Sans CJK SC；字号一律取 `FS_TITLE/FS_LABEL/FS_TICK/FS_LEGEND/FS_ANNOT`（8–10.5pt，比正文略小但清晰），禁逐脚本手写
+- **坐标框架**：一律调用 `style_axes(ax, grid='y')`（横向条形 `grid='x'`、散点可 `both`、等高线可 `None`；热图例外需四边闭合），禁止在各脚本里重复手写 spine/网格/刻度设置
+- **去噪**：删除无意义背景色/过粗边框/阴影；去上右 spine；图例默认无框、系列 ≤5 优先直接标注；留白是高级感的来源
 
 #### 统一绘图工具模块（强制统一使用，code/plot_style.py）
 
-> 绘图样式初始化全部收敛于此模块，所有绘图脚本 `import` 即可复用，避免每脚本重复粘贴样式代码；集中管理色板、colormap、纹理、两档标准尺寸与统一保存入口（自动 300DPI、防裁切、保存后关闭 figure 防内存累积）。
+> 绘图样式初始化全部收敛于此模块，所有绘图脚本 `import` 即可复用，避免每脚本重复粘贴样式代码；集中管理 Nature 语义色板（身份/基准/方向/中性/层级）、色图、纹理、三档标准尺寸、分级字号与样式助手（`style_axes`/`add_panel_label`/`annotate_bars`/`delta_annotation`/`identity_color`/`tint`）及统一保存入口（自动 300DPI、防裁切、保存后关闭 figure 防内存累积）。
 
 ```python
-# code/plot_style.py —— 统一样式模块（保存至 code/，绘图脚本 from plot_style import * 复用）
+# code/plot_style.py —— 统一样式模块（保存至 code/，绘图脚本 from plot_style import ... 复用）
+# Nature 版式：颜色只承担三种职责——身份（哪个方法/系列）、方向（升还是降）、层级（主证据还是陪衬）；
+# 字号、轴线、网格、面板标号、数值标注一律取自本模块常量并调用 style_axes / add_panel_label /
+# annotate_bars 等助手，禁止在脚本里另行定义色值或裸字号。
 import os
 import warnings
 import matplotlib
@@ -868,50 +963,179 @@ matplotlib.use('Agg')   # 非交互后端：无 GUI 开销，批量出图稳定�
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import font_manager
+from matplotlib.colors import LinearSegmentedColormap, to_hex, to_rgb
 
-# ===== Master Palette（学术低饱和，与第 4 章配色方案一致；禁纯黑 #000000） =====
-COLOR_MAIN    = '#4C72B0'   # 主色A 学术蓝：核心数据/模型结果
-COLOR_ACCENT  = '#C44E52'   # 辅色B 绛红：对比/误差/负面
-COLOR_SAGE    = '#55A868'   # 辅色C 苔绿：辅助/正向
-COLOR_MUSTARD = '#DD8452'   # 辅色D 赭橙：强调/极值
-COLOR_ROCK    = '#8E9AAF'   # 中性色E 岩石灰：基准/背景
-COLOR_INK     = '#2F353B'   # 深色F 炭墨黑：文字/轴线/边框
-LINE_PALETTE = [COLOR_MAIN, COLOR_ACCENT, COLOR_SAGE, COLOR_ROCK]
-FILL_ALPHA = 0.2
-HATCH_SEQUENCE = ['', '---', '|||']   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
-from matplotlib.colors import LinearSegmentedColormap
-SURFACE_CMAP   = LinearSegmentedColormap.from_list('academic_seq',
-    ['#2F4B7C', '#4C72B0', '#8E9AAF', '#E9EFF7'])   # 波谷深蓝→波峰极浅蓝灰（顺序量单色渐变，"石膏雕塑感"）
-DIVERGENT_CMAP = LinearSegmentedColormap.from_list('academic_div',
-    ['#4C72B0', '#F5F5F5', '#C44E52'])              # 负蓝→中心灰白→正红（热力图发散学术低饱和）
-FIG_FULL = (6.3, 4.0)   # 整版宽图（A4 版心 16cm ≈ 6.3in）
-FIG_TALL = (6.3, 5.5)   # 双子图竖版（拟合+残差等）
+# ===== 身份色（identity）：只回答"这是哪个方法/哪条系列"，跨图含义不变 =====
+COLOR_MAIN         = '#1A6FC4'   # 主角蓝：本文方法/主系列，每张图同一含义固定不变
+COLOR_MAIN_LIGHT   = '#5B9BD5'   # 同族中调：主系列变体
+COLOR_MAIN_PALE    = '#B4D4F0'   # 同族浅调：支持信息
+ACCENT_ORANGE      = '#E28E2C'   # 次系列 1（橙）
+ACCENT_PURPLE      = '#7B5FD6'   # 次系列 2（紫）
+ACCENT_TEAL        = '#33B5A5'   # 次系列 3（青）
+ACCENT_CORAL       = '#D9544D'   # 次系列 4（珊红）
+ACCENT_LAVENDER    = '#B89BD9'   # 次系列 5（淡紫）
+IDENTITY_PALETTE = (COLOR_MAIN, ACCENT_ORANGE, ACCENT_PURPLE,
+                    ACCENT_TEAL, ACCENT_CORAL, ACCENT_LAVENDER)
 
-# ===== 中文字体检测回退（缺字体环境避免静默输出方框） =====
-def pick_cjk_font(candidates=('SimHei', 'Microsoft YaHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei')):
-    installed = {f.name for f in font_manager.fontManager.ttflist}
+# ===== 基准色（baseline）：对照/参考/均值一律中灰，不与主角抢身份 =====
+COLOR_BASELINE      = '#767676'
+COLOR_BASELINE_DARK = '#4D4D4D'
+
+# ===== 方向色（signal）：只用于有正负之分的变化量（差值、增益、损失） =====
+COLOR_POSITIVE = '#2E9E44'   # ↑ 提升
+COLOR_NEGATIVE = '#E53935'   # ↓ 下降
+
+# ===== 中性色（底色/网格/次要文字/轴线/正文）；禁纯黑 #000000，一律 COLOR_INK =====
+NEUTRAL_BG    = '#F5F5F5'
+NEUTRAL_LIGHT = '#D8D8D8'
+NEUTRAL_MID   = '#A8A8A8'
+NEUTRAL_DARK  = '#606060'
+COLOR_INK     = '#333333'
+
+TONE_RAMP = (COLOR_MAIN, COLOR_MAIN_LIGHT, COLOR_MAIN_PALE, NEUTRAL_MID)  # 深=主证据，浅=陪衬
+LINE_PALETTE = [COLOR_MAIN, ACCENT_ORANGE, ACCENT_PURPLE, COLOR_BASELINE]
+FILL_ALPHA = 0.15          # 置信带/填充一律淡，不遮数据
+HATCH_SEQUENCE = ('', '---', '|||')   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
+
+# 兼容别名：旧脚本里"红=负面、绿=正向、橙=强调、灰=基准"的角色映射保持不变（值随 Nature 色板更新）；
+# 新代码请直接使用上面的语义常量。
+COLOR_ACCENT  = COLOR_NEGATIVE
+COLOR_SAGE    = COLOR_POSITIVE
+COLOR_MUSTARD = ACCENT_ORANGE
+COLOR_ROCK    = COLOR_BASELINE
+
+# ===== 色图（与身份色同族，保证跨图色彩一致） =====
+DIVERGENT_CMAP = LinearSegmentedColormap.from_list(
+    'academic_div', [(0.0, COLOR_MAIN), (0.5, NEUTRAL_BG), (1.0, ACCENT_CORAL)])  # 负蓝→浅灰→珊红
+SURFACE_CMAP = DIVERGENT_CMAP                        # 发散型曲面/矩阵沿用同一色图
+SEQUENTIAL_CMAP = LinearSegmentedColormap.from_list(  # 单极数据与黑白打印变体
+    'academic_seq', [(0.0, '#F2F5FA'), (1.0, COLOR_MAIN)])
+
+# ===== 字号与线宽（Nature 版式：小字、细线、多留白） =====
+FS_TITLE, FS_LABEL, FS_TICK, FS_LEGEND, FS_ANNOT, FS_PANEL = 10.5, 9.5, 8.5, 8.5, 8.0, 12.0
+AX_LINEW, TICK_LEN, TICK_PAD = 0.7, 3.2, 3.0
+GRID_LINESTYLE = (0, (4, 3))   # 浅灰细虚线，只保留数值轴方向
+
+# ===== 标准尺寸（A4 版心 16cm ≈ 6.3in；Nature 单栏 89mm ≈ 3.5in） =====
+FIG_FULL = (6.3, 4.0)     # 整版宽图（折线、柱状、条形）
+FIG_TALL = (6.3, 5.5)     # 双子图竖版（拟合+残差等）
+FIG_SQUARE = (5.6, 4.6)   # 近方形（热图、环图、散点方阵、等高线）
+
+# ===== 字体检测回退（按安装情况过滤字体栈，缺字体环境避免静默方框与 findfont 刷屏） =====
+_INSTALLED_FONTS = {f.name for f in font_manager.fontManager.ttflist}
+
+def pick_cjk_font(candidates=('Microsoft YaHei', 'SimHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei')):
     for name in candidates:
-        if name in installed:
+        if name in _INSTALLED_FONTS:
             return name
-    warnings.warn('未找到任何中文字体，图中中文将显示为方框！请安装 SimHei 或 Noto Sans CJK。')
+    warnings.warn('未找到任何中文字体，图中中文将显示为方框！请安装 Microsoft YaHei 或 Noto Sans CJK。')
     return 'sans-serif'
 
+def pick_font_stack(latin=('Arial', 'Helvetica', 'Liberation Sans')):
+    """西文候选只保留已安装的，再补 DejaVu Sans 兜底符号与中文字体。"""
+    stack = [name for name in latin if name in _INSTALLED_FONTS]
+    stack += ['DejaVu Sans', pick_cjk_font()]
+    return stack
+
+# ===== 语义取色与标注助手（脚本内不写 hex、不写裸字号，一律调这些） =====
+def identity_color(i):
+    """按序取身份色：第 0 个恒为主角蓝，其后橙/紫/青/珊红/淡紫，超出循环。"""
+    return IDENTITY_PALETTE[i % len(IDENTITY_PALETTE)]
+
+def tint(color, amount=0.35):
+    """向白混合以降饱和/体现层级（0 原色，1 纯白）；同族明度阶梯用它，不要另立色板。"""
+    r, g, b = to_rgb(color)
+    return to_hex((r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount))
+
+def delta_annotation(base, value, digits=0):
+    """相对基准的有向变化 → (文本, 颜色)：↑绿 ↓红；只用于真正表达增降的场合。"""
+    if base == 0:
+        return '—', COLOR_BASELINE
+    pct = (value - base) / abs(base) * 100
+    arrow, color = (('↑', COLOR_POSITIVE) if pct > 0
+                    else ('↓', COLOR_NEGATIVE) if pct < 0
+                    else ('=', COLOR_BASELINE))
+    return f'{arrow}{abs(pct):.{digits}f}%', color
+
+def style_axes(ax, grid='y'):
+    """Nature 式坐标框架：去上/右 spine、细轴线外伸刻度、只留单向浅灰细虚线网格（热图例外勿调）。"""
+    for side in ('top', 'right'):
+        ax.spines[side].set_visible(False)
+    for side in ('left', 'bottom'):
+        ax.spines[side].set_visible(True)
+        ax.spines[side].set_linewidth(AX_LINEW)
+        ax.spines[side].set_color(NEUTRAL_DARK)
+    ax.tick_params(axis='both', which='both', direction='out', length=TICK_LEN,
+                   width=AX_LINEW, color=NEUTRAL_DARK, colors=COLOR_INK,
+                   labelsize=FS_TICK, pad=TICK_PAD)
+    for axis in (ax.xaxis, ax.yaxis):
+        axis.label.set_fontsize(FS_LABEL)
+        axis.label.set_color(COLOR_INK)
+    if grid in ('x', 'y', 'both'):
+        ax.grid(axis=grid, color=NEUTRAL_LIGHT, linewidth=0.6, linestyle=GRID_LINESTYLE)
+        ax.set_axisbelow(True)
+    return ax
+
+def add_panel_label(ax, label, x=-0.11, y=1.02, fontsize=FS_PANEL):
+    """多子图面板标号（粗体小写字母，压在轴框外左上）。"""
+    ax.text(x, y, label, transform=ax.transAxes, fontsize=fontsize,
+            fontweight='bold', color=COLOR_INK, va='bottom', ha='left')
+    return ax
+
+def annotate_bars(ax, bars, fmt='{:.2f}', orient='v', fontsize=FS_ANNOT, color=NEUTRAL_DARK):
+    """柱/条端数值标注：偏移按轴范围自适应，负值自动移到下方，小字深灰不抢数据。"""
+    lo, hi = (ax.get_ylim() if orient == 'v' else ax.get_xlim())
+    step = (hi - lo) * 0.015
+    for bar in bars:
+        if orient == 'v':
+            value, x, y = bar.get_height(), bar.get_x() + bar.get_width() / 2, bar.get_height()
+            y += step if value >= 0 else -step
+            ax.text(x, y, fmt.format(value), ha='center',
+                    va='bottom' if value >= 0 else 'top', fontsize=fontsize, color=color)
+        else:
+            value = bar.get_width()
+            x = value + (step if value >= 0 else -step)
+            y = bar.get_y() + bar.get_height() / 2
+            ax.text(x, y, fmt.format(value), va='center',
+                    ha='left' if value >= 0 else 'right', fontsize=fontsize, color=color)
+    return ax
+
 def apply_style():
-    # font 必须用字体族别名 'sans-serif'：硬编码具体字体名（如 'SimHei'）会使 font.family
-    # 固定为该字体，字体缺失时直接回退 DejaVu Sans，跳过 font.sans-serif 回退列表，
-    # 导致 pick_cjk_font 的检测回退机制失效（缺字体环境中文显示方框）
-    sns.set_theme(style='ticks', palette=LINE_PALETTE, font='sans-serif', font_scale=1.1,
-                  rc={'axes.axisbelow': True, 'axes.edgecolor': COLOR_INK,
+    # font.family 必须给"列表"：matplotlib 3.6+ 的字形回退只在 family 为多字体列表时逐字体查找，
+    # 中文走 CJK 字体、缺的字形（−、₁、² 等）自动落到 DejaVu Sans；写成别名 'sans-serif' 只取
+    # 列表第一个可用字体，中文缺字形直接方框。未安装候选由 pick_font_stack 先过滤，免得刷屏警告。
+    sns.set_theme(style='ticks', palette=LINE_PALETTE, font_scale=1.0,
+                  rc={'axes.axisbelow': True, 'axes.edgecolor': NEUTRAL_DARK,
                       'axes.labelcolor': COLOR_INK, 'axes.spines.top': False,
                       'axes.spines.right': False, 'xtick.color': COLOR_INK,
                       'ytick.color': COLOR_INK, 'figure.frameon': False})
     plt.rcParams.update({          # 覆盖顺序：set_theme 在前，微调在后
-        'font.sans-serif': [pick_cjk_font()],
+        'font.family': pick_font_stack(),
         'axes.unicode_minus': False,
+        'svg.fonttype': 'none',    # SVG 里的中文保持可编辑文本
+        'pdf.fonttype': 42,        # PDF 嵌 TrueType，便于排版软件编辑
         'figure.dpi': 100,         # 仅影响屏幕交互渲染速度；存图一律 savefig.dpi，与正式版同品质
         'savefig.dpi': 300,        # 输出出版级分辨率（预览与正式同品质）
-        'font.size': 11,
-        'axes.linewidth': 1.2,
+        'savefig.facecolor': 'white',
+        'font.size': FS_LABEL,
+        'axes.titlesize': FS_TITLE,
+        'axes.titleweight': 'bold',
+        'axes.titlecolor': COLOR_INK,
+        'axes.titlepad': 10,
+        'axes.labelsize': FS_LABEL,
+        'axes.linewidth': AX_LINEW,
+        'xtick.labelsize': FS_TICK,
+        'ytick.labelsize': FS_TICK,
+        'xtick.direction': 'out',
+        'ytick.direction': 'out',
+        'xtick.major.size': TICK_LEN,
+        'ytick.major.size': TICK_LEN,
+        'legend.fontsize': FS_LEGEND,
+        'legend.frameon': False,   # 图例无框；系列 ≤5 时优先直接标注取代图例
+        'legend.handlelength': 1.8,
+        'legend.borderaxespad': 0.4,
+        'lines.markersize': 4.5,
+        'patch.linewidth': 0.8,
     })
 
 def save_fig(fig, path, vector=False, close=True, dpi=300):
@@ -934,12 +1158,13 @@ def save_fig(fig, path, vector=False, close=True, dpi=300):
 apply_style()   # import 即完成一次性初始化
 ```
 
-各绘图脚本收敛为两行：
+各绘图脚本一律走同一入口（取色取字号只从本模块，脚本内不出现 hex 与裸字号）：
 
 ```python
-from plot_style import save_fig, LINE_PALETTE, FIG_FULL, HATCH_SEQUENCE
+from plot_style import save_fig, style_axes, identity_color, FIG_FULL, COLOR_BASELINE
 fig, ax = plt.subplots(figsize=FIG_FULL)
-# ... 绘图逻辑 ...
+# ... 绘图逻辑：系列取 identity_color(i)，基准/参照取 COLOR_BASELINE ...
+style_axes(ax, grid='y')       # 坐标框架统一，禁逐脚本手写 spine/网格/刻度设置
 save_fig(fig, '../figures/final/fig2_perf_q1.png', vector=True)
 ```
 
@@ -951,9 +1176,12 @@ save_fig(fig, '../figures/final/fig2_perf_q1.png', vector=True)
 
 ```python
 from matplotlib.colors import Normalize            # 与 numpy / pyplot 一并 import
-from plot_style import DIVERGENT_CMAP, save_fig    # 冷暖双极（高值红/低值蓝）；要"石膏雕塑感"单色渐变换 SURFACE_CMAP
+from plot_style import (DIVERGENT_CMAP, FS_LABEL, FS_TICK, FS_TITLE, save_fig)
+# 冷暖双极（高值珊红/低值主角蓝）；单极数据或黑白打印变体换 SEQUENTIAL_CMAP
 
-fig = plt.figure(figsize=(9.2, 7.2))
+S = 1.35   # 大幅面 3D 图（9.2×7.2 in）字号整体放大一档；仍一律由 FS_* 派生，禁裸字号
+
+fig = plt.figure(figsize=(9.2, 7.2))               # 3D 大图需更宽画布，故不用 FIG_FULL
 ax = fig.add_axes([0.02, 0.05, 0.78, 0.88], projection='3d')   # 手动留位：右侧空出 colorbar，勿用 add_subplot + colorbar(ax=ax)（会压扁曲面）
 
 norm = Normalize(vmin=Z.min(), vmax=Z.max())      # 色带上下限锁定数据极值，颜色与高度严格对应
@@ -961,254 +1189,328 @@ surf = ax.plot_surface(X, Y, Z, cmap=DIVERGENT_CMAP, norm=norm,
     linewidth=0, antialiased=True, shade=True, alpha=0.96,
     rstride=1, cstride=1)                         # 大网格提速：rstride=cstride=max(1, Z.shape[0]//80)
 
-ax.set_xlabel('参数α', fontsize=13, labelpad=10)   # 图内标注一律中文（依赖 plot_style 的 CJK 字体回退）
-ax.set_ylabel('参数β', fontsize=13, labelpad=10)
-ax.set_zlabel('目标值', fontsize=12, labelpad=8)
+ax.set_xlabel('参数 α', fontsize=FS_LABEL * S, labelpad=10)   # 图内标注一律中文（依赖 plot_style 的 CJK 字体回退）
+ax.set_ylabel('参数 β', fontsize=FS_LABEL * S, labelpad=10)
+ax.set_zlabel('目标值', fontsize=FS_LABEL * S, labelpad=8)
 ax.set_xlim(X.min(), X.max()); ax.set_ylim(Y.min(), Y.max()); ax.set_zlim(Z.min(), Z.max())
 ax.set_xticks(np.linspace(X.min(), X.max(), 6))   # 刻度手动等分，避免长小数挤占版面
 ax.set_yticks(np.linspace(Y.min(), Y.max(), 6))
 ax.set_zticks(np.linspace(Z.min(), Z.max(), 5))
-ax.tick_params(labelsize=8, pad=2)                # 刻度字号小于轴标签，密集刻度仍清晰
+ax.tick_params(labelsize=FS_TICK * S, pad=2)      # 刻度字号小于轴标签，密集刻度仍清晰
 ax.view_init(elev=31, azim=42)                    # 俯角 31°/方位 42°：起伏与遮挡最平衡
 ax.set_box_aspect((1.18, 1.45, 0.72))             # 关键：三维框物理比例独立于数据量程，防曲面压扁/拉长
 
 for axis in (ax.xaxis, ax.yaxis, ax.zaxis):        # 三面透明 + 浅灰描边：去默认灰底，黑白打印仍有层次
     axis.pane.set_facecolor((1, 1, 1, 0))
-    axis.pane.set_edgecolor('#d0d0d0')
+    axis.pane.set_edgecolor('#d0d0d0')             # 3D 专用描边灰，不套用 2D 的 NEUTRAL_* 体系
 ax.grid(True, color=(0.72, 0.72, 0.72, 0.65), linewidth=0.6)
 
 cax = fig.add_axes([0.84, 0.23, 0.028, 0.48])      # 独立 colorbar 轴：窄条 + 半幅高，与曲面互不侵占
 cbar = fig.colorbar(surf, cax=cax)
-cbar.set_label('目标值', fontsize=11, labelpad=10)
+cbar.set_label('目标值', fontsize=FS_LABEL * S, labelpad=10)
 cbar.set_ticks(np.linspace(Z.min(), Z.max(), 5))
-cbar.ax.tick_params(labelsize=8)
+cbar.ax.tick_params(labelsize=FS_TICK * S)
 cbar.outline.set_linewidth(0.75)
 
-ax.set_title('参数响应曲面', fontsize=14, pad=18)
-save_fig(fig, '../figures/final/fig_3d_surface.png', vector=True)   # 300 DPI 位图 + 同步 PDF 矢量
+ax.set_title('参数响应曲面', fontsize=FS_TITLE * S, pad=18)
+save_fig(fig, '../figures/final/fig_3d_surface.png', vector=True, dpi=200)   # 密度类 3D 图按分级策略取 200 DPI
 ```
 
 **模板2：热力图（带数值标注 + 遮罩上三角）**
 
 ```python
-from plot_style import DIVERGENT_CMAP   # 发散学术低饱和：负蓝 → 中心灰白 → 正红（禁 jet/rainbow）
+from plot_style import DIVERGENT_CMAP, FS_TICK, FS_TITLE, save_fig
+# 发散色图：负主角蓝 → 中心浅灰 → 正珊红（禁 jet/rainbow）；黑白打印换 SEQUENTIAL_CMAP
 
-fig, ax = plt.subplots(figsize=(7, 6))
+fig, ax = plt.subplots(figsize=(7, 6))             # 近方形版面亦可直接用 FIG_SQUARE
 mask = np.triu(np.ones_like(corr_matrix, dtype=bool), k=1)  # 遮罩上三角（不含对角线），更简洁
 
 sns.heatmap(corr_matrix, mask=mask,
     annot=True, fmt='.2f',
     cmap=DIVERGENT_CMAP,
-    center=0,                 # 以0为中心
+    center=0,                 # 以 0 为中心，正负方向可读
     vmin=-1, vmax=1,
     square=True,
-    linewidths=0.5,
-    linecolor='white',
-    annot_kws={'fontsize': 8, 'family': 'Consolas'},   # 等宽字体，数字清晰
+    linewidths=0.6,
+    linecolor='white',        # 白色细格线分隔，不用灰线（Nature 分隔口径）
+    annot_kws={'fontsize': FS_TICK},   # 格内数值用常规无衬线，禁等宽字体（Consolas 等与全篇不符）
     cbar_kws={'shrink': 0.8, 'label': '相关系数'},
     ax=ax
 )
-ax.set_title('参数相关性矩阵', fontsize=14, fontweight='bold', pad=15)
-plt.savefig('../figures/final/fig_heatmap.png', dpi=300, bbox_inches='tight')
+ax.tick_params(length=0)                          # 刻度线归零：热图靠格线定位，刻度是噪声
+ax.set_title('参数相关性矩阵', fontsize=FS_TITLE, fontweight='bold', pad=10)
+ax.set_xlabel('')                                 # 特征名已在刻度标签给出，勿重复
+save_fig(fig, '../figures/final/fig_heatmap.png', dpi=300)   # 小格数值标注需 300 DPI 保清晰
 ```
 
 **模板3：拟合对比图（含置信带 + 残差子图）**
 
 ```python
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 7),
-    gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.05})
+from plot_style import (COLOR_BASELINE, COLOR_MAIN, FILL_ALPHA, FIG_TALL, FS_ANNOT,
+                        FS_LABEL, NEUTRAL_BG, add_panel_label, save_fig, style_axes)
 
-# 上图：拟合曲线 + 置信带
-ax1.scatter(x_data, y_data, s=20, c='#4C72B0', alpha=0.6,
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=FIG_TALL,
+    gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.12})
+
+# 上图：拟合曲线 + 置信带（观测灰、模型主角蓝、置信带主角蓝淡填充）
+ax1.scatter(x_data, y_data, s=20, c=COLOR_BASELINE, alpha=0.6,
             edgecolors='white', linewidth=0.5, label='观测值', zorder=3)
-ax1.plot(x_fit, y_fit, color='#C44E52', linewidth=2, label='拟合曲线', zorder=4)
+ax1.plot(x_fit, y_fit, color=COLOR_MAIN, linewidth=2.2, label='拟合曲线', zorder=4)
 ax1.fill_between(x_fit, y_lower, y_upper,
-    color='#C44E52', alpha=0.2, label='95% 置信区间', zorder=2)
-ax1.legend(frameon=False, loc='best')
-ax1.set_ylabel('因变量 $y$')
+    color=COLOR_MAIN, alpha=FILL_ALPHA, label='95% 置信区间', zorder=2)
+ax1.text(0.02, 0.95, f'R² = {r2:.3f}   RMSE = {rmse:.3f}   n = {len(y_data)}',
+         transform=ax1.transAxes, va='top', fontsize=FS_ANNOT, color=COLOR_BASELINE,
+         bbox=dict(facecolor=NEUTRAL_BG, edgecolor='none', pad=2.5))   # 检测量写在图上，正文不再重复公式
+ax1.set_ylabel('因变量 y')                        # 纯文本，禁 "$y$" 与中文混排（会变方框）
+style_axes(ax1, grid='y'); add_panel_label(ax1, 'a')
+ax1.legend(frameon=False, loc='lower right', fontsize=FS_LABEL)
 
-# 下图：残差图
+# 下图：残差图（零线取基准灰虚线，±2σ 带用主角蓝淡填充）
 residuals = y_data - y_pred
-ax2.scatter(x_data, residuals, s=15, c='#55A868', alpha=0.7,
+ax2.scatter(x_data, residuals, s=15, c=COLOR_MAIN, alpha=0.7,
             edgecolors='white', linewidth=0.3)
-ax2.axhline(y=0, color='#C44E52', linewidth=1.2, linestyle='--', alpha=0.7)
+ax2.axhline(y=0, color=COLOR_BASELINE, linewidth=1.2, linestyle='--')
 ax2.fill_between(x_data, -2*np.std(residuals), 2*np.std(residuals),
-    color='#C44E52', alpha=0.08)
-ax2.set_xlabel('自变量 $x$')
+    color=COLOR_BASELINE, alpha=0.08)
+ax2.set_xlabel('自变量 x')
 ax2.set_ylabel('残差')
+style_axes(ax2, grid='y'); add_panel_label(ax2, 'b')
 
-plt.savefig('../figures/final/fig_fitting.png', dpi=300, bbox_inches='tight')
+save_fig(fig, '../figures/final/fig_fitting.png', vector=True)
 ```
 
 **模板4：迭代收敛曲线（种群适应度 + 最优/均值适应度）**
 
 ```python
-fig, ax1 = plt.subplots(figsize=(8, 5))
+from plot_style import (COLOR_BASELINE, COLOR_MAIN, COLOR_MAIN_PALE, FIG_FULL, FS_ANNOT,
+                        delta_annotation, save_fig, style_axes)
 
-# 所有种群适应度（散点背景）：>1万点时子采样 + rasterized，兼顾渲染速度与矢量文件体积
+fig, ax1 = plt.subplots(figsize=FIG_FULL)
+
+# 所有种群适应度（浅调散点作背景）：>1万点时子采样 + rasterized，兼顾渲染速度与矢量文件体积
 sub = slice(None, None, 2)   # 每隔1代采样；点数极大时可改为 None, None, 5
-ax1.scatter(generations[sub], all_fitness[sub], s=5, c='#4C72B0', alpha=0.15,
-            label='种群个体', rasterized=True)
-# 最优适应度（主线）
-ax1.plot(generations, best_fitness, color='#C44E52', linewidth=2.5,
+ax1.scatter(generations[sub], all_fitness[sub], s=5, c=COLOR_MAIN_PALE, alpha=0.5,
+            label='种群个体', rasterized=True, zorder=2)
+# 最优适应度（主证据：主角蓝加粗）
+ax1.plot(generations, best_fitness, color=COLOR_MAIN, linewidth=2.2,
          label='最优适应度', zorder=5)
-# 均值适应度
-ax1.plot(generations, mean_fitness, color='#55A868', linewidth=1.5,
-         linestyle='--', label='均值适应度', alpha=0.8)
+# 均值适应度（支持信息：基准灰虚线）
+ax1.plot(generations, mean_fitness, color=COLOR_BASELINE, linewidth=1.5,
+         linestyle='--', label='均值适应度', alpha=0.9, zorder=4)
 
-ax1.set_xlabel('迭代代数', fontsize=12)
-ax1.set_ylabel('适应度值', fontsize=12, color='#2F353B')
+# 收敛代数：相邻代改进不足首代的 0.1% 即视为收敛（全程未收敛则取末代）；累计变化用方向色 + ↑/↓
+delta = np.abs(np.diff(best_fitness))
+conv_mask = delta < 0.001 * delta[0]
+conv = int(np.argmax(conv_mask)) if conv_mask.any() else len(generations) - 1
+ax1.axvline(generations[conv], color=COLOR_BASELINE, linewidth=0.8, linestyle=':')
+gain, gcolor = delta_annotation(best_fitness[0], best_fitness[-1], digits=1)
+ax1.annotate(f'收敛于第 {generations[conv]} 代，累计 {gain}',
+             xy=(generations[conv], best_fitness[conv]), xytext=(8, -22),
+             textcoords='offset points', fontsize=FS_ANNOT, color=gcolor)
+
+ax1.set_xlabel('迭代代数')
+ax1.set_ylabel('适应度值')
+style_axes(ax1, grid='y')
 ax1.legend(frameon=False, loc='upper right')
-ax1.grid(True, alpha=0.3, linestyle=':', linewidth=0.8)
 
-plt.savefig('../figures/final/fig_convergence.png', dpi=300, bbox_inches='tight')
+save_fig(fig, '../figures/final/fig_convergence.png', vector=True)
 ```
 
 **模板5：Pareto前沿图（多目标优化）**
 
 ```python
-fig, ax = plt.subplots(figsize=(7, 6))
+from plot_style import (ACCENT_ORANGE, COLOR_BASELINE, COLOR_MAIN, FIG_SQUARE, FS_ANNOT,
+                        NEUTRAL_LIGHT, save_fig, style_axes)
 
-# 所有解（灰色背景）
-ax.scatter(obj1_all, obj2_all, s=15, c='#8E9AAF', alpha=0.3,
-           edgecolors='none', label='所有解（候选解）', zorder=2)
-# Pareto最优前沿
+fig, ax = plt.subplots(figsize=FIG_SQUARE)
+
+# 候选解浅灰点云（背景），非支配前沿主角蓝白心标记（主证据）
+ax.scatter(obj1_all, obj2_all, s=15, c=NEUTRAL_LIGHT, alpha=0.6,
+           edgecolors='none', label='候选解', zorder=2)
 pareto_sorted = sorted(zip(obj1_pareto, obj2_pareto))
 ax.plot([p[0] for p in pareto_sorted], [p[1] for p in pareto_sorted],
-    color='#C44E52', linewidth=2, marker='o', markersize=6,
+    color=COLOR_MAIN, linewidth=2, marker='o', markersize=6,
     markerfacecolor='white', markeredgewidth=1.5,
-    label='Pareto前沿', zorder=4)
+    label='Pareto 前沿', zorder=4)
 
-ax.set_xlabel('目标 $f_1$', fontsize=12)
-ax.set_ylabel('目标 $f_2$', fontsize=12)
-ax.legend(frameon=True, fancybox=True, framealpha=0.8, loc='best')
-ax.grid(True, alpha=0.2, linestyle=':', linewidth=0.8)
-plt.savefig('../figures/final/fig_pareto.png', dpi=300, bbox_inches='tight')
+# 折中解（离理想点最近，按两目标各自极值等权衡量）用橙色星标；理想投影用基准灰虚线
+o1_min = min(p[0] for p in pareto_sorted)
+o2_min = min(p[1] for p in pareto_sorted)
+knee = min(pareto_sorted, key=lambda p: abs(p[0] - o1_min) + abs(p[1] - o2_min))
+ax.scatter(*knee, marker='*', s=220, c=ACCENT_ORANGE, edgecolors='white',
+           linewidths=0.8, zorder=6, label='折中解')
+ax.axvline(knee[0], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
+ax.axhline(knee[1], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
+ax.annotate(f'折中解 ({knee[0]:.2f}, {knee[1]:.2f})', xy=knee, xytext=(10, -16),
+            textcoords='offset points', fontsize=FS_ANNOT, color=ACCENT_ORANGE)
+
+ax.set_xlabel('目标 f1（成本）')                    # 纯文本下标，禁 mathtext 与中文混排
+ax.set_ylabel('目标 f2（工期）')
+style_axes(ax, grid='both')
+ax.legend(frameon=False, loc='upper right')
+save_fig(fig, '../figures/final/fig_pareto.png', vector=True)
 ```
 
-#### 基础图型绘制规范与代码模板（折线/柱状/箱线/饼/条形）
+#### 基础图型绘制规范与代码模板（折线/柱状/箱线/环形/条形）
 
-> 高频基础图型的逐项规范，与上方配色及 plot_style.py 统一样式模块配套；强调黑白打印/色盲场景的明暗区分（纹理仅多组年份等场景可选）。热力图低饱和变体见下方注意事项。
+> 高频基础图型的逐项规范，与上方 Nature 配色及 `plot_style.py` 统一样式模块配套：取色只用语义常量，坐标框架一律 `style_axes()`，数值标注一律 `annotate_bars()`；强调黑白打印/色盲场景的明暗区分（纹理仅多组年份等场景可选）。热力图灰度打印变体见本节末注意事项。
 
 **折线图（性能对比、耗时、准确率变化曲线）**
 
-- X/Y 轴**完整标注物理含义 + 单位**（如：检测文件数量、耗时 (ms)）
-- 网格**仅保留横向浅灰细虚线**，纵向网格删除，减少视觉杂乱
+- X/Y 轴**完整标注物理含义 + 单位**（如：检测文件数量、耗时（ms））
+- 网格由 `style_axes(ax, grid='y')` 统一给出：只保留数值轴方向浅灰细虚线，纵向网格删除
 - 性能对比类**坐标轴起点从 0 开始**（避免视觉误导）
-- **主次层级**：主线（本文模型）主色A 2.5pt 实线；对比线（基准/其他模型）岩石灰或苔绿 1.5pt 虚线/点划线；标记点白心；置信带用线条色 0.2 透明度填充
-- 同图曲线 ≤5 条，超过建议分图；禁用粗艳丽线条、大面积填充渐变
+- **主次层级**：主线（本文方法）`COLOR_MAIN` 2.2pt 实线 + 白心标记；对比方法取 `identity_color(i)` 1.5pt；**基准/参照一律 `COLOR_BASELINE` 虚线**；置信带用线条同色 + `FILL_ALPHA`
+- 同图曲线 ≤5 条，超过分图；**优先线尾直接标注取代图例**；禁用粗艳丽线条与大面积填充渐变
 
 ```python
-fig, ax = plt.subplots(figsize=(6.3, 4.0))
-x = np.array([100, 200, 500, 1000, 2000])   # 检测文件数量
-# 主次层级：主线(主色A) 2.5pt 实线；对比线 1.5pt 虚线；标记白心
-styles = [('#4C72B0', '-',  'o', 2.5), ('#C44E52', '--', 's', 1.5),
-          ('#55A868', '-.', '^', 1.5), ('#8E9AAF', ':',  'D', 1.5)]
-for (color, ls, mk, lw), (name, y) in zip(styles, series.items()):
-    ax.plot(x, y, color=color, linestyle=ls, marker=mk,
-            markersize=5, linewidth=lw, markerfacecolor='white', label=name)   # 标记 4–6pt
-ax.set_xlabel('检测文件数量 (个)')
-ax.set_ylabel('耗时 (ms)')
-ax.set_xlim(0, x.max() * 1.05); ax.set_ylim(0, None)   # 从 0 起始（性能对比强制）
-ax.grid(axis='y', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)  # 仅横向网格
-ax.legend(frameon=False, fontsize=9)
+from plot_style import COLOR_BASELINE, FIG_FULL, FS_ANNOT, identity_color, save_fig, style_axes
+
+fig, ax = plt.subplots(figsize=FIG_FULL)
+x = np.array([100, 200, 500, 1000, 2000])                    # 检测文件数量
+line_styles = [('-', 'o', 2.2), ('--', 's', 1.5), ('-.', '^', 1.5), (':', 'D', 1.5)]
+for i, ((name, y), (ls, mk, lw)) in enumerate(zip(series.items(), line_styles)):
+    is_baseline = name.startswith('基准')                     # 参照对象走灰，不占身份色
+    color = COLOR_BASELINE if is_baseline else identity_color(i)
+    ax.plot(x, y, color=color, linestyle=ls, marker=mk, linewidth=lw,
+            markerfacecolor='white', label=name)              # 线型+标记+颜色三重冗余
+    ax.text(x[-1], y[-1], f' {name}', color=color, fontsize=FS_ANNOT, va='center')  # 线尾直标
+ax.set_xlabel('检测文件数量（个）')
+ax.set_ylabel('耗时（ms）')
+ax.set_xlim(0, x.max() * 1.3)      # 从 0 起始（性能对比强制）+ 右侧留直接标注位
+ax.set_ylim(0, None)
+style_axes(ax, grid='y')
+save_fig(fig, '../figures/final/fig_line_q1.png', vector=True)
 ```
 
 **分组柱状图（多方案指标对比）**
 
-- **柱宽统一**，组内柱间距 < 组间间距
-- **单色扁平填充**，无渐变、无立体浮雕；组内用与热力图同款发散族的低饱和版（柔蓝/柔红/淡蓝，即端色向灰白混合约30%）区分，避免大面积高饱和色块；**基础图表不默认添加斜线/圆点纹理**（多组年份等场景可用透明度或横线/竖线纹理区分）
-- **Y 轴必须从 0 起始**；柱顶数值标注字号 7–8pt、深灰色（炭墨黑）
-- 一组图表彩色 ≤4 种，其余用灰度柱；误差棒用炭墨黑 + capsize
+- **柱宽统一**，组内柱间距 < 组间间距；**Y 轴必须从 0 起始**
+- **单色扁平填充**，无渐变、无立体浮雕；**指标（系列）取身份色 `identity_color(i)`，方案（同族层级）取 `TONE_RAMP` 明度**；基础图表不默认加斜线/圆点纹理（多组年份等确需区分时用透明度或 `HATCH_SEQUENCE`）
+- 柱端数值一律走 `annotate_bars()`（`FS_ANNOT` 小字 + `NEUTRAL_DARK`），不手写 `ax.text`
+- 对照组相对本文方案的均值增益用 `delta_annotation()` 输出 `↑/↓` + 方向色；误差棒用 `COLOR_INK` + capsize
 
 ```python
-fig, ax = plt.subplots(figsize=(6.3, 4.0))
-groups = ['方案A', '方案B', '方案C']; metrics = ['准确率', '召回率', 'F1']
+from plot_style import (FIG_FULL, FS_ANNOT, annotate_bars, delta_annotation,
+                        identity_color, save_fig, style_axes)
+
+fig, ax = plt.subplots(figsize=FIG_FULL)
+groups = ['方案A', '方案B', '方案C']
+metrics = ['准确率', '召回率', 'F1']
 data = np.array([[0.92, 0.88, 0.90], [0.85, 0.83, 0.84], [0.88, 0.90, 0.89]])
 n_g, n_m = data.shape
 bar_w = 0.7 / n_m                      # 柱宽统一；组内柱心距=柱宽 < 组间距 0.3
-colors = ['#7F99C5', '#D38083', '#B7CAE4']      # 组内 与热力图同款发散族低饱和版：柔蓝/柔红/淡蓝
 for i in range(n_m):
     centers = np.arange(n_g) + (i - (n_m - 1) / 2) * bar_w
-    bars = ax.bar(centers, data[:, i], width=bar_w, color=colors[i],
+    bars = ax.bar(centers, data[:, i], width=bar_w,
+                  color=identity_color(i),                         # 指标（系列）取身份色
                   edgecolor='white', linewidth=0.8, label=metrics[i])
-    for b, v in zip(bars, data[:, i]):
-        ax.text(b.get_x() + b.get_width() / 2, v + 0.005, f'{v:.2f}',
-                ha='center', va='bottom', fontsize=7.5, color='#2F353B')  # 柱顶 7–8pt 深灰
+    annotate_bars(ax, bars, fmt='{:.2f}')                          # 柱端数值统一标注
+gain, gcolor = delta_annotation(data[1].mean(), data[0].mean(), digits=1)   # 方案A vs 方案B
+ax.text(0.98, 0.96, f'方案A 均值增益 {gain}', transform=ax.transAxes,
+        ha='right', va='top', fontsize=FS_ANNOT, color=gcolor)             # 方向色 + ↑/↓
 ax.set_xticks(np.arange(n_g)); ax.set_xticklabels(groups)
-ax.set_ylim(0, data.max() * 1.15)               # Y 轴必须从 0 起始
+ax.set_ylim(0, data.max() * 1.12)                              # Y 轴必须从 0 起始
 ax.set_ylabel('指标值')
-ax.grid(axis='y', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
-ax.legend(frameon=False, fontsize=9)
+style_axes(ax, grid='y')
+ax.legend(frameon=False, ncols=len(metrics), loc='upper center',
+          bbox_to_anchor=(0.5, -0.08))                         # 图例移到轴下方，不压数据
+save_fig(fig, '../figures/final/fig_bar_q2.png', vector=True)
 ```
 
 **箱线图（误差/耗时分布、稳定性实验）**
 
-- 箱体**主色A 填充（α0.7）**，中位线**绛红加粗**
-- 离群点统一**小型实心圆点、单一岩石灰**；须（Whiskers）**炭墨黑**
-- 仅保留**横向细网格**，简化视觉干扰；每组箱体尺寸完全一致、均匀排布；可叠加半透明灰色抖动散点展示原始分布
+- **白底箱体 + 身份色边框 + 同色 2.2pt 粗中位线**（Nature 口径：箱体不填充主色，避免大面积色块压过中位数）
+- 均值用**白心菱形**；个体观测以同色半透明**抖动点全量呈现**（显示每一次观测，不只画摘要）
+- 离群点统一**单一基准灰小实心圆**，不额外赋色；须与端帽取 `COLOR_INK`
+- 每组箱体尺寸完全一致、均匀排布；网格走 `style_axes(ax, grid='y')`
 
 ```python
-fig, ax = plt.subplots(figsize=(6.3, 4.0))
+from plot_style import (COLOR_BASELINE, COLOR_INK, FIG_FULL, identity_color, save_fig,
+                        style_axes)
+
+fig, ax = plt.subplots(figsize=FIG_FULL)
 rng = np.random.default_rng(0)
 data = [rng.normal(20, 3, 50), rng.normal(35, 5, 50), rng.normal(50, 8, 50)]
-for i, d in enumerate(data, start=1):            # 叠加抖动散点（原始分布）
-    ax.scatter(np.full_like(d, i) + rng.uniform(-0.08, 0.08, len(d)), d,
-               s=10, color='#8E9AAF', alpha=0.35, edgecolors='none')
-ax.boxplot(data, patch_artist=True, widths=0.45,                     # 箱体尺寸一致
-    boxprops=dict(facecolor='#4C72B0', alpha=0.7, color='#2F353B'),  # 主色A 填充 α0.7
-    medianprops=dict(color='#C44E52', linewidth=2),                  # 中位线绛红加粗
-    whiskerprops=dict(color='#2F353B'), capprops=dict(color='#2F353B'),  # 须/端 炭墨黑
-    flierprops=dict(marker='o', markersize=4, markerfacecolor='#8E9AAF',  # 离群点岩石灰
-                    markeredgecolor='none', alpha=0.7))
-ax.set_xticks(range(1, 4)); ax.set_xticklabels(['模型1', '模型2', '模型3'])
-ax.set_ylabel('耗时 (ms)')
-ax.grid(axis='y', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
+for i, d in enumerate(data):                                  # 个体观测：同色抖动点全量
+    ax.scatter(np.full_like(d, i + 1) + rng.uniform(-0.12, 0.12, len(d)), d,
+               s=9, color=identity_color(i), alpha=0.35, edgecolors='none', zorder=2)
+bp = ax.boxplot(data, patch_artist=True, widths=0.45, zorder=3,      # 箱体尺寸一致、均匀排布
+    boxprops=dict(facecolor='white', linewidth=1.2),                 # 白底箱体（边框逐箱同色）
+    medianprops=dict(linewidth=2.2),                                 # 中位线加粗（同上取身份色）
+    whiskerprops=dict(color=COLOR_INK, linewidth=1.0),
+    capprops=dict(color=COLOR_INK, linewidth=1.0),
+    flierprops=dict(marker='o', markersize=4, markerfacecolor=COLOR_BASELINE,
+                    markeredgecolor='none', alpha=0.8))              # 离群点单一基准灰
+for i, (box, med) in enumerate(zip(bp['boxes'], bp['medians'])):
+    box.set_edgecolor(identity_color(i))                             # 边框与中位线同组同色
+    med.set_color(identity_color(i))
+for i, d in enumerate(data):                                         # 均值：白心菱形
+    ax.scatter(i + 1, np.mean(d), marker='D', s=34, facecolor='white',
+               edgecolor=identity_color(i), linewidths=1.2, zorder=5)
+ax.set_xticks(range(1, len(data) + 1)); ax.set_xticklabels(['模型1', '模型2', '模型3'])
+ax.set_ylabel('耗时（ms）')
+ax.set_ylim(0, None)
+style_axes(ax, grid='y')
+save_fig(fig, '../figures/final/fig_box_q3.png', vector=True)
 ```
 
-**饼图（仅限占比统计，竞赛论文尽量少用）**
+**环形图（模块占比，替代饼图；竞赛论文尽量少用）**
 
-- 区块 **≤5 类**，分类过多改用柱状图
-- **扁平化无立体凸起**，区块细灰分割线；靠学术低饱和配色 + 细灰分割线区分（不默认添加斜线/圆点纹理）
-- 百分比文字放区块内部、小字清晰
-- **学术建议**：性能、指标对比优先柱状/折线；饼图仅用于模块占比、资源分配
+- 类别 **≤5 类**，分类过多改用柱状/条形；性能与指标对比优先柱状/折线
+- 占比由 **`TONE_RAMP` 同族明度**编码（最大块最深，逐级变浅），分隔线统一**白色 1.2pt**，扁平无立体
+- **取消图例**：类别与百分比用引线直接标注在环外；中心留白写总量
+- 学术建议：优先柱状/折线，环形图只用于模块占比、资源分配这类构成关系
 
 ```python
-fig, ax = plt.subplots(figsize=(4.8, 4.8))
-labels = ['特征提取', '模型推理', '数据加载', '其他']          # ≤5 类
-sizes  = [52, 30, 12, 6]
-colors = ['#7F99C5', '#D38083', '#B7CAE4', '#E5BFC0']       # 与分组柱状图同款低饱和发散族：柔蓝/柔红/淡蓝/淡红
-wedges, _, autotexts = ax.pie(sizes, autopct='%1.1f%%', colors=colors,
-    startangle=90, counterclock=False,
-    wedgeprops=dict(edgecolor='#8E9AAF', linewidth=0.8),     # 细灰分割线，无立体
-    textprops={'fontsize': 9})
-for t in autotexts:
-    t.set_fontsize(8); t.set_color('#2F353B')              # 百分比内嵌小字（炭墨黑，= COLOR_INK，字面量保证可独立运行）
-ax.legend(wedges, labels, loc='center left', bbox_to_anchor=(1.0, 0.5),
-          frameon=False, fontsize=9)
-ax.set_aspect('equal')
+from plot_style import COLOR_INK, FIG_SQUARE, FS_ANNOT, FS_TITLE, TONE_RAMP, save_fig
+
+fig, ax = plt.subplots(figsize=FIG_SQUARE)
+labels = ['特征提取', '模型推理', '数据加载', '其他']       # ≤5 类
+sizes = [52, 30, 12, 6]
+ranks = np.empty(len(sizes), dtype=int)
+ranks[np.argsort(sizes)[::-1]] = np.arange(len(sizes))      # 0 = 最大块 → 明度最深
+wedges, _ = ax.pie(sizes, startangle=90, counterclock=False,
+    colors=[TONE_RAMP[min(r, len(TONE_RAMP) - 1)] for r in ranks],
+    wedgeprops=dict(width=0.38, edgecolor='white', linewidth=1.2))   # width<1 → 真环形（中空），白色分隔无立体
+for w, label, value in zip(wedges, labels, sizes):          # 引线直标取代图例
+    ang = np.deg2rad((w.theta1 + w.theta2) / 2)
+    ax.annotate(f'{label}\n{value:.1f}%', xy=(np.cos(ang) * 0.99, np.sin(ang) * 0.99),
+                xytext=(np.cos(ang) * 1.26, np.sin(ang) * 1.26), ha='center', va='center',
+                fontsize=FS_ANNOT, color=COLOR_INK,
+                arrowprops=dict(arrowstyle='-', color=COLOR_INK, linewidth=0.6))
+ax.text(0, 0, f'合计\n{sum(sizes):.0f} s', ha='center', va='center',
+        fontsize=FS_TITLE, fontweight='bold', color=COLOR_INK)   # 环心写总量
+save_fig(fig, '../figures/final/fig_ring_q4.png', vector=True)
 ```
 
-**条形图（类别名称较长时替代柱状图）**
+**条形图（类别名称较长或排名对比）**
 
-- 类别文字**左对齐**（水平条形天然满足），条形统一高度
-- 规则同柱状图：数值轴从 0 起始、条端标注 7–8pt 深灰、彩色 ≤4 种其余灰度；适合长文本标签
+- 长类别名一律用横向条形；**按数值降序排列**，第一名主角蓝、其后逐级走 `TONE_RAMP` 明度（明度即排名）
+- 数值轴从 0 起始；条端数值用 `annotate_bars(ax, bars, orient='h')`，不手写 `ax.text`
+- 类别标签左对齐（横向天然满足）、条形统一高度；网格走 `style_axes(ax, grid='x')`
 
 ```python
-fig, ax = plt.subplots(figsize=(6.3, 4.2))
+from plot_style import FIG_FULL, TONE_RAMP, annotate_bars, save_fig, style_axes
+
+fig, ax = plt.subplots(figsize=FIG_FULL)
 cats = ['YOLOv8 检测模型', 'Faster R-CNN 检测模型', 'SSD 检测模型', 'CenterNet 检测模型']
 vals = [0.923, 0.874, 0.831, 0.796]
-bars = ax.barh(cats, vals, height=0.6, color='#4C72B0',
+order = np.argsort(vals)[::-1]                              # 降序：第一名置于顶部且颜色最深
+cats = [cats[i] for i in order]; vals = [vals[i] for i in order]
+bars = ax.barh(np.arange(len(cats)), vals, height=0.6,
+               color=[TONE_RAMP[min(r, len(TONE_RAMP) - 1)] for r in range(len(vals))],
                edgecolor='white', linewidth=0.8)
-for b, v in zip(bars, vals):
-    ax.text(v + 0.005, b.get_y() + b.get_height() / 2, f'{v:.3f}',
-            va='center', ha='left', fontsize=7.5, color='#2F353B')
-ax.set_xlim(0, max(vals) * 1.12)             # 数值轴从 0 起始
+ax.set_yticks(np.arange(len(cats))); ax.set_yticklabels(cats)
+ax.invert_yaxis()
+annotate_bars(ax, bars, fmt='{:.3f}', orient='h')            # 条端数值统一标注
+ax.set_xlim(0, max(vals) * 1.12)                              # 数值轴从 0 起始
 ax.set_xlabel('mAP@0.5')
-ax.grid(axis='x', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
+style_axes(ax, grid='x')
+save_fig(fig, '../figures/final/fig_hbar_q5.png', vector=True)
 ```
 
-**热力图低饱和补充**：相关性/准确率矩阵等需黑白打印的场景，可将模板2的发散学术低饱和 `DIVERGENT_CMAP` 换为单色低饱和顺序色系，如 `sns.light_palette('#4C72B0', as_cmap=True)`（蓝→浅灰），并保持格子细灰边框（`linewidths=0.6, linecolor='#8E9AAF'`）与色阶条（`cbar_kws` 标注数值区间）。
+**热力图灰度打印变体**：需黑白打印的场景（如附录矩阵图），把模板2 的发散色图 `DIVERGENT_CMAP` 换成 `SEQUENTIAL_CMAP`（浅→主角蓝单色顺序系），格线仍保持白色 `linewidths=0.6, linecolor='white'`，并在 `cbar_kws` 里标注数值区间；层级差异改由明度承担，灰度打印仍可读。
 
 #### 流程图专项规范与代码模板（第二章问题分析图 / 开发流程 / 系统架构图）
 
@@ -1226,10 +1528,10 @@ ax.grid(axis='x', linestyle='--', color='lightgray', linewidth=0.6, alpha=0.8)
 **图形样式**
 
 - 统一**圆角 3–5pt 扁平化方框**（`FancyBboxPatch` + `round,rounding_size`），无直角、无立体效果
-- 区分模块类型（学术低饱和“工程美学”）：
-  - **核心算法/处理单元**：填充浅蓝 `#D6E4F0`，边框主色A `#4C72B0`（加深边框突出）
+- 区分模块类型（学术低饱和“工程美学”；**示意图专用色板，与 `plot_style.py` 的数据图色板相互独立**）：
+  - **核心算法/处理单元**：填充浅蓝 `#D6E4F0`，边框学术蓝 `#4C72B0`（加深边框突出）
   - **配置 / skill 文件等辅助模块**：填充极淡灰 `#F5F5F5`，边框岩石灰 `#8E9AAF` 虚线
-  - **输出成果**：填充浅灰蓝 `#EBF2FA`，边框主色A `#4C72B0`
+  - **输出成果**：填充浅灰蓝 `#EBF2FA`，边框学术蓝 `#4C72B0`
 - 框内文字统一**炭墨黑 `#2F353B`** 居中，字号 ≥9pt；行数过多时拆分为多个模块
 
 **箭头规范**
@@ -1799,8 +2101,12 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 - 三线表格式（无竖线）
 - 第二章必须含问题分析图（流程图/技术路线图），符合流程图专项规范
 - 性能对比图坐标轴从 0 起始；折线图同图曲线≤5条
-- 多组图形用学术低饱和配色+明暗/透明度区分，黑白打印可辨识（不默认斜线/圆点纹理）
+- 多组图形按 Nature 三职责取色（身份色 + `TONE_RAMP` 明度/透明度区分），灰度打印可辨识（不默认斜线/圆点纹理）
 - 图内文字（标题/轴标签/图例/colorbar/注解）语言统一：未特别要求时全为中文，无中英混排（明确要求全英文时除外）
+- 图内无 mathtext 与中文混排（`"问题规模 $n$（个）"` 会让中文渲染成方框，须写纯文本 `"问题规模 n（个）"`）
+- 基准/参照线为灰色（`COLOR_BASELINE`），方向色（红/绿）只出现在有正负的变化量上且同时带 `↑/↓` 或正负号
+- 同一方法在全文各图颜色一致（按画图前登记的方法-颜色对照取色，模板图与现绘图同色）
+- 灰度打印下各系列仍可区分（不得仅靠红绿区分系列；主次层级由 `TONE_RAMP` 明度承担）
 
 #### [中等] 正文语言表述
 
@@ -2023,10 +2329,10 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | --------- | ----------------------------------- |
 | 中文乱码      | 使用 xelatex，删除 inputenc              |
 | 图片文字不全    | 设置 SimHei，使用 bbox\_inches='tight'   |
-| 图片中文显示方框  | 缺字体环境用字体检测回退（pick\_cjk\_font），安装 SimHei 或 Noto Sans CJK |
+| 图片中文显示方框  | 缺字体环境由 `pick_cjk_font` 检测回退，安装 Microsoft YaHei / SimHei / Noto Sans CJK |
 | 折线图曲线过多难区分 | 同图≤5条，线型+标记区分，超限分图         |
 | 性能对比图Y轴不从0起 | 强制 `ax.set_ylim(0, ...)`，避免视觉误导    |
-| 黑白打印分不清组别 | 用学术低饱和配色+明暗/透明度区分；多组年份可用横线/竖线纹理 |
+| 黑白打印分不清组别 | 身份色 + `TONE_RAMP` 明度/透明度区分；多组年份可用横线/竖线纹理 |
 | 文字超出纸张    | 使用 seqsplit，tabularx，[H]定位         |
 | caption报错 | 使用 font=small，禁止 font={font=10.5pt} |
 | 假设用列表非表格   | 改用 tabular 三线表，表题在上方，含合理性说明        |
