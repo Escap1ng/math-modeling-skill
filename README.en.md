@@ -20,7 +20,9 @@ Problem analysis · Algorithm selection · Code implementation · Paper polishin
 
 ## Overview
 
-An end-to-end AI skill built for the **Contemporary Undergraduate Mathematical Contest in Modeling (CUMCM)**, covering the full pipeline of **problem understanding → model construction → algorithm implementation → paper output → quality self-assessment**. Equally applicable to MCM/ICM, graduate modeling contests, and similar events. A multimodal AI model is recommended.
+An end-to-end AI skill for mathematical modeling contests, covering the full pipeline of **problem understanding → model construction → algorithm implementation → paper output → quality self-assessment**. A multimodal AI model is recommended.
+
+> **Competitions** — China Undergraduate Mathematical Contest in Modeling (CUMCM, 高教社杯), MCM/ICM (Mathematical Contest in Modeling / Interdisciplinary Contest in Modeling), China Graduate Mathematical Contest in Modeling (“华为杯”), MathorCup (大学生数学建模挑战赛), the National Statistical Modeling Contest for College Students (全国大学生统计建模大赛), and the Asia-Pacific Mathematical Contest in Modeling for College Students (APMCM), among others. Defaults follow the CUMCM rules; page limits, anonymity and formatting requirements are governed by each contest's official regulations.
 
 The skill ships with a curated algorithm library, publication-grade visualization standards, and award-level paper formatting, closed by a 0–100 quality loop: a paper is finalized only after passing the five-dimension evaluation (≥ 85 points), guaranteeing complete structure, compliant formatting, and verifiable results.
 
@@ -46,7 +48,7 @@ The skill itself is a single Markdown file (`SKILL.md`) — installed by copying
 
 ## Usage
 
-Copy the root `SKILL.md` into your agent's skills directory (e.g. `~/.claude/skills/math-modeling-helper/`).
+Copy the root `SKILL.md` into your agent's skills directory (the exact path varies by tool — see its docs; the folder name must match `name: math-modeling-helper` in the `SKILL.md` front matter, e.g. `~/.claude/skills/math-modeling-helper/SKILL.md`).
 
 Dependencies: Python 3 with `numpy` / `pandas` / `matplotlib` / `seaborn`; `xelatex` and `pandoc` for paper output (`python-docx` for Word fine-tuning).
 
@@ -141,7 +143,7 @@ The dependencies below are auto-checked in Stage 0; missing ones are installed a
 - **Figure count** — at least one color figure per sub-question; 6+ recommended for the whole paper (minimum 4); a problem-analysis flowchart / technical-route diagram is mandatory in chapter two
 - **Unified style module** — palette, colormaps, hatches, three standard sizes, the font scale, and style helpers (`style_axes` / `annotate_bars` / `delta_annotation`) defined once in `plot_style.py`; preview figures match final quality
 - **The library is not the boundary** — figure type follows the data and the conclusion being argued; drawing beyond the templates is encouraged, while style stays fixed: one shared set of constants plus a pre-registered method→color map for cross-figure consistency
-- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate); advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the 20 templates of `mathmodel-figure` as a supplement
+- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate); advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the matching `mathmodel-figure` templates as a supplement
 
 ---
 

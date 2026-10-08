@@ -7,7 +7,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 
 ## 核心定位
 
-专为数学建模国赛（高教社杯）设计，覆盖**赛题理解 → 模型构建 → 算法实现 → 论文输出**全流程。
+面向数学建模竞赛设计（国赛 / 美赛 / 研赛 / MathorCup 等），覆盖**赛题理解 → 模型构建 → 算法实现 → 论文输出**全流程。未指定赛事时按高教社杯全国大学生数学建模竞赛（CUMCM）的规范执行，页数、匿名、格式等硬性要求以所报赛事官方规则为准。
 
 **核心风格**：学术语态、逻辑严谨、创新性强、结果可验证
 
@@ -55,7 +55,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 └── answer/         # 所有建模产出统一存放于 answer 文件夹下
     ├── code/           # Python代码（按问题编号：q1_*.py, q2_*.py；含 plot_style.py 统一样式模块）
     ├── figures/
-    │   ├── final/      # 交付图（语义命名：fig{图号}_{题型}_{内容}.png/pdf，≥300 DPI，须被论文 .tex 引用）
+    │   ├── final/      # 交付图（语义命名：fig{图号}_{题型}_{内容}.png/pdf；图号未定前一律以 figN_ 占位、插入论文时替换，≥300 DPI，须被论文 .tex 引用）
     │   └── tmp/        # 调试图（与正式版同品质 300 DPI；交付/打包前整体删除）
     └── paper/          # 论文（paper.tex + paper.pdf + paper.docx）
 ```
@@ -819,7 +819,7 @@ restyle_word_paper()
 | 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
 | 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
 
-> 上述 8 类本 skill 无内置代码模板：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
+> 上表中未内置代码模板的进阶图型：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
 
 > 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范与代码模板见下文「基础图型绘制规范与代码模板」。
 
@@ -854,6 +854,8 @@ restyle_word_paper()
 **现绘最小骨架**（复制到 `code/qX_custom.py` 后只改数据与图型，其余不动）
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import (COLOR_BASELINE, COLOR_MAIN, FILL_ALPHA, FIG_FULL, FS_ANNOT,
                         FS_LABEL, save_fig, style_axes)
 
@@ -875,7 +877,7 @@ ax.set_xlim(0, x.max() * 1.18)                  # 右侧留直接标注位，文
 ax.set_ylim(0, None)                            # 性能类数值轴从 0 起
 style_axes(ax, grid='y')                        # 坐标框架统一
 ax.set_title('图题写结论，不写绘制过程', fontsize=FS_LABEL)
-save_fig(fig, '../figures/final/figX_custom.png', vector=True)
+save_fig(fig, '../figures/final/figN_custom_explore.png', vector=True)
 ```
 
 多子图主次分明用 `gs = fig.add_gridspec(2, 2, width_ratios=[1.5, 1], hspace=0.45, wspace=0.3)` + `add_panel_label(ax, 'a')`：hero 面板不得与陪衬等大，每个子图回答一个**唯一**问题，同指标子图共享上下限（`sharey=True`）。
@@ -1138,18 +1140,21 @@ def apply_style():
         'patch.linewidth': 0.8,
     })
 
-def save_fig(fig, path, vector=False, close=True, dpi=300):
+def save_fig(fig, path, vector=False, close=True, dpi=300, tight=True):
     """统一保存入口：默认位图 300DPI + 防裁切（PNG 无损压缩，体积约降 10–30%）；
-    可选同步导出 PDF 矢量版；默认保存后关闭释放内存（close 后 figure 不可再编辑）"""
+    可选同步导出 PDF 矢量版；默认保存后关闭释放内存（close 后 figure 不可再编辑）。
+    tight=False 用于 tight 边框算不全的对象——3D 图的 z 轴标签会被 matplotlib 排除在
+    tight bbox 之外、保存时整行裁掉，此时改由 add_axes 的左侧留白保证不裁切"""
     # 目录自愈：figures/final 等输出目录不存在时自动创建，避免 FileNotFoundError
     parent = os.path.dirname(path)
     if parent:
         os.makedirs(parent, exist_ok=True)
-    fig.savefig(path, dpi=dpi, bbox_inches='tight', pad_inches=0.1,
+    bbox = 'tight' if tight else None
+    fig.savefig(path, dpi=dpi, bbox_inches=bbox, pad_inches=0.1,
                 pil_kwargs={'optimize': True} if path.rsplit('.', 1)[-1].lower()
                 in ('png', 'jpg', 'jpeg', 'gif', 'webp', 'tif', 'tiff') else None)
     if vector:
-        fig.savefig(path.rsplit('.', 1)[0] + '.pdf', bbox_inches='tight')
+        fig.savefig(path.rsplit('.', 1)[0] + '.pdf', bbox_inches=bbox)
     if close:
         plt.close(fig)
 # 分级 DPI 说明：线条/柱状类优先 vector=True（PDF 矢量，体积小）；位图密度类
@@ -1161,11 +1166,12 @@ apply_style()   # import 即完成一次性初始化
 各绘图脚本一律走同一入口（取色取字号只从本模块，脚本内不出现 hex 与裸字号）：
 
 ```python
+import matplotlib.pyplot as plt
 from plot_style import save_fig, style_axes, identity_color, FIG_FULL, COLOR_BASELINE
 fig, ax = plt.subplots(figsize=FIG_FULL)
 # ... 绘图逻辑：系列取 identity_color(i)，基准/参照取 COLOR_BASELINE ...
 style_axes(ax, grid='y')       # 坐标框架统一，禁逐脚本手写 spine/网格/刻度设置
-save_fig(fig, '../figures/final/fig2_perf_q1.png', vector=True)
+save_fig(fig, '../figures/final/figN_line_perf.png', vector=True)
 ```
 
 #### 高频图表代码模板
@@ -1175,14 +1181,16 @@ save_fig(fig, '../figures/final/fig2_perf_q1.png', vector=True)
 **模板1：三维曲面图（定比三维框 + 独立 colorbar）**
 
 ```python
-from matplotlib.colors import Normalize            # 与 numpy / pyplot 一并 import
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 from plot_style import (DIVERGENT_CMAP, FS_LABEL, FS_TICK, FS_TITLE, save_fig)
 # 冷暖双极（高值珊红/低值主角蓝）；单极数据或黑白打印变体换 SEQUENTIAL_CMAP
 
 S = 1.35   # 大幅面 3D 图（9.2×7.2 in）字号整体放大一档；仍一律由 FS_* 派生，禁裸字号
 
 fig = plt.figure(figsize=(9.2, 7.2))               # 3D 大图需更宽画布，故不用 FIG_FULL
-ax = fig.add_axes([0.02, 0.05, 0.78, 0.88], projection='3d')   # 手动留位：右侧空出 colorbar，勿用 add_subplot + colorbar(ax=ax)（会压扁曲面）
+ax = fig.add_axes([0.11, 0.05, 0.69, 0.88], projection='3d')   # 手动留位：左侧留 z 轴标签、右侧空出 colorbar，勿用 add_subplot + colorbar(ax=ax)（会压扁曲面）
 
 norm = Normalize(vmin=Z.min(), vmax=Z.max())      # 色带上下限锁定数据极值，颜色与高度严格对应
 surf = ax.plot_surface(X, Y, Z, cmap=DIVERGENT_CMAP, norm=norm,
@@ -1191,7 +1199,7 @@ surf = ax.plot_surface(X, Y, Z, cmap=DIVERGENT_CMAP, norm=norm,
 
 ax.set_xlabel('参数 α', fontsize=FS_LABEL * S, labelpad=10)   # 图内标注一律中文（依赖 plot_style 的 CJK 字体回退）
 ax.set_ylabel('参数 β', fontsize=FS_LABEL * S, labelpad=10)
-ax.set_zlabel('目标值', fontsize=FS_LABEL * S, labelpad=8)
+ax.set_zlabel('目标值', fontsize=FS_LABEL * S, labelpad=14)
 ax.set_xlim(X.min(), X.max()); ax.set_ylim(Y.min(), Y.max()); ax.set_zlim(Z.min(), Z.max())
 ax.set_xticks(np.linspace(X.min(), X.max(), 6))   # 刻度手动等分，避免长小数挤占版面
 ax.set_yticks(np.linspace(Y.min(), Y.max(), 6))
@@ -1213,12 +1221,15 @@ cbar.ax.tick_params(labelsize=FS_TICK * S)
 cbar.outline.set_linewidth(0.75)
 
 ax.set_title('参数响应曲面', fontsize=FS_TITLE * S, pad=18)
-save_fig(fig, '../figures/final/fig_3d_surface.png', vector=True, dpi=200)   # 密度类 3D 图按分级策略取 200 DPI
+save_fig(fig, '../figures/final/figN_surface_param.png', vector=True, dpi=200, tight=False)   # 密度类 3D 图按分级策略取 200 DPI；tight=False 防 z 轴标签被裁
 ```
 
 **模板2：热力图（带数值标注 + 遮罩上三角）**
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from plot_style import DIVERGENT_CMAP, FS_TICK, FS_TITLE, save_fig
 # 发散色图：负主角蓝 → 中心浅灰 → 正珊红（禁 jet/rainbow）；黑白打印换 SEQUENTIAL_CMAP
 
@@ -1240,12 +1251,14 @@ sns.heatmap(corr_matrix, mask=mask,
 ax.tick_params(length=0)                          # 刻度线归零：热图靠格线定位，刻度是噪声
 ax.set_title('参数相关性矩阵', fontsize=FS_TITLE, fontweight='bold', pad=10)
 ax.set_xlabel('')                                 # 特征名已在刻度标签给出，勿重复
-save_fig(fig, '../figures/final/fig_heatmap.png', dpi=300)   # 小格数值标注需 300 DPI 保清晰
+save_fig(fig, '../figures/final/figN_heat_corr.png', dpi=300)   # 小格数值标注需 300 DPI 保清晰
 ```
 
 **模板3：拟合对比图（含置信带 + 残差子图）**
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import (COLOR_BASELINE, COLOR_MAIN, FILL_ALPHA, FIG_TALL, FS_ANNOT,
                         FS_LABEL, NEUTRAL_BG, add_panel_label, save_fig, style_axes)
 
@@ -1266,7 +1279,7 @@ style_axes(ax1, grid='y'); add_panel_label(ax1, 'a')
 ax1.legend(frameon=False, loc='lower right', fontsize=FS_LABEL)
 
 # 下图：残差图（零线取基准灰虚线，±2σ 带用主角蓝淡填充）
-residuals = y_data - y_pred
+residuals = y_data - np.interp(x_data, x_fit, y_fit)   # 拟合值插值到观测点，长度与 x_data 对齐
 ax2.scatter(x_data, residuals, s=15, c=COLOR_MAIN, alpha=0.7,
             edgecolors='white', linewidth=0.3)
 ax2.axhline(y=0, color=COLOR_BASELINE, linewidth=1.2, linestyle='--')
@@ -1276,20 +1289,26 @@ ax2.set_xlabel('自变量 x')
 ax2.set_ylabel('残差')
 style_axes(ax2, grid='y'); add_panel_label(ax2, 'b')
 
-save_fig(fig, '../figures/final/fig_fitting.png', vector=True)
+save_fig(fig, '../figures/final/figN_fit_resid.png', vector=True)
 ```
 
 **模板4：迭代收敛曲线（种群适应度 + 最优/均值适应度）**
 
 ```python
-from plot_style import (COLOR_BASELINE, COLOR_MAIN, COLOR_MAIN_PALE, FIG_FULL, FS_ANNOT,
-                        delta_annotation, save_fig, style_axes)
+import numpy as np
+import matplotlib.pyplot as plt
+from plot_style import (COLOR_BASELINE, COLOR_INK, COLOR_MAIN, COLOR_MAIN_PALE, FIG_FULL,
+                        FS_ANNOT, delta_annotation, save_fig, style_axes)
 
 fig, ax1 = plt.subplots(figsize=FIG_FULL)
 
-# 所有种群适应度（浅调散点作背景）：>1万点时子采样 + rasterized，兼顾渲染速度与矢量文件体积
-sub = slice(None, None, 2)   # 每隔1代采样；点数极大时可改为 None, None, 5
-ax1.scatter(generations[sub], all_fitness[sub], s=5, c=COLOR_MAIN_PALE, alpha=0.5,
+# 所有种群适应度（浅调散点作背景）：all_fitness 为 (n_gen, n_pop) 矩阵，展平后横坐标须用
+# np.repeat 逐代对齐；>1万点时子采样 + rasterized，兼顾渲染速度与矢量文件体积
+n_gen, n_pop = all_fitness.shape
+gen_flat = np.repeat(generations, n_pop)      # 与 all_fitness.ravel() 一一对应
+flat = all_fitness.ravel()
+sub = slice(None, None, 2 * n_pop)            # 每隔 1 代取一批；点数极大时改为 5 * n_pop
+ax1.scatter(gen_flat[sub], flat[sub], s=5, c=COLOR_MAIN_PALE, alpha=0.5,
             label='种群个体', rasterized=True, zorder=2)
 # 最优适应度（主证据：主角蓝加粗）
 ax1.plot(generations, best_fitness, color=COLOR_MAIN, linewidth=2.2,
@@ -1303,22 +1322,29 @@ delta = np.abs(np.diff(best_fitness))
 conv_mask = delta < 0.001 * delta[0]
 conv = int(np.argmax(conv_mask)) if conv_mask.any() else len(generations) - 1
 ax1.axvline(generations[conv], color=COLOR_BASELINE, linewidth=0.8, linestyle=':')
-gain, gcolor = delta_annotation(best_fitness[0], best_fitness[-1], digits=1)
+if best_fitness[0] == 0:      # 首代为 0 时百分比无定义（delta_annotation 会返回 '—'），改报绝对增量
+    gain, gcolor = f'Δ={best_fitness[-1] - best_fitness[0]:+.3f}', COLOR_INK
+else:
+    gain, gcolor = delta_annotation(best_fitness[0], best_fitness[-1], digits=1)
+dx = -10 if conv > 0.7 * (len(generations) - 1) else 8   # 收敛靠右时文字翻到竖线左侧，避开右上角图例
 ax1.annotate(f'收敛于第 {generations[conv]} 代，累计 {gain}',
-             xy=(generations[conv], best_fitness[conv]), xytext=(8, -22),
-             textcoords='offset points', fontsize=FS_ANNOT, color=gcolor)
+             xy=(generations[conv], best_fitness[conv]), xytext=(dx, -22),
+             textcoords='offset points', fontsize=FS_ANNOT, color=gcolor,
+             ha='right' if dx < 0 else 'left')
 
 ax1.set_xlabel('迭代代数')
 ax1.set_ylabel('适应度值')
 style_axes(ax1, grid='y')
-ax1.legend(frameon=False, loc='upper right')
+ax1.legend(frameon=False, loc='upper center', bbox_to_anchor=(0.5, -0.20),
+           ncols=3)              # 图例移到轴下方，右上角留给收敛标注（与标注重叠实测 0 px²）
 
-save_fig(fig, '../figures/final/fig_convergence.png', vector=True)
+save_fig(fig, '../figures/final/figN_converge_ga.png', vector=True)
 ```
 
 **模板5：Pareto前沿图（多目标优化）**
 
 ```python
+import matplotlib.pyplot as plt
 from plot_style import (ACCENT_ORANGE, COLOR_BASELINE, COLOR_MAIN, FIG_SQUARE, FS_ANNOT,
                         NEUTRAL_LIGHT, save_fig, style_axes)
 
@@ -1348,7 +1374,7 @@ ax.set_xlabel('目标 f1（成本）')                    # 纯文本下标，�
 ax.set_ylabel('目标 f2（工期）')
 style_axes(ax, grid='both')
 ax.legend(frameon=False, loc='upper right')
-save_fig(fig, '../figures/final/fig_pareto.png', vector=True)
+save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 ```
 
 #### 基础图型绘制规范与代码模板（折线/柱状/箱线/环形/条形）
@@ -1364,6 +1390,8 @@ save_fig(fig, '../figures/final/fig_pareto.png', vector=True)
 - 同图曲线 ≤5 条，超过分图；**优先线尾直接标注取代图例**；禁用粗艳丽线条与大面积填充渐变
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import COLOR_BASELINE, FIG_FULL, FS_ANNOT, identity_color, save_fig, style_axes
 
 fig, ax = plt.subplots(figsize=FIG_FULL)
@@ -1380,7 +1408,7 @@ ax.set_ylabel('耗时（ms）')
 ax.set_xlim(0, x.max() * 1.3)      # 从 0 起始（性能对比强制）+ 右侧留直接标注位
 ax.set_ylim(0, None)
 style_axes(ax, grid='y')
-save_fig(fig, '../figures/final/fig_line_q1.png', vector=True)
+save_fig(fig, '../figures/final/figN_line_scale.png', vector=True)
 ```
 
 **分组柱状图（多方案指标对比）**
@@ -1391,6 +1419,8 @@ save_fig(fig, '../figures/final/fig_line_q1.png', vector=True)
 - 对照组相对本文方案的均值增益用 `delta_annotation()` 输出 `↑/↓` + 方向色；误差棒用 `COLOR_INK` + capsize
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import (FIG_FULL, FS_ANNOT, annotate_bars, delta_annotation,
                         identity_color, save_fig, style_axes)
 
@@ -1415,7 +1445,7 @@ ax.set_ylabel('指标值')
 style_axes(ax, grid='y')
 ax.legend(frameon=False, ncols=len(metrics), loc='upper center',
           bbox_to_anchor=(0.5, -0.08))                         # 图例移到轴下方，不压数据
-save_fig(fig, '../figures/final/fig_bar_q2.png', vector=True)
+save_fig(fig, '../figures/final/figN_bar_metric.png', vector=True)
 ```
 
 **箱线图（误差/耗时分布、稳定性实验）**
@@ -1426,6 +1456,8 @@ save_fig(fig, '../figures/final/fig_bar_q2.png', vector=True)
 - 每组箱体尺寸完全一致、均匀排布；网格走 `style_axes(ax, grid='y')`
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import (COLOR_BASELINE, COLOR_INK, FIG_FULL, identity_color, save_fig,
                         style_axes)
 
@@ -1452,7 +1484,7 @@ ax.set_xticks(range(1, len(data) + 1)); ax.set_xticklabels(['模型1', '模型2'
 ax.set_ylabel('耗时（ms）')
 ax.set_ylim(0, None)
 style_axes(ax, grid='y')
-save_fig(fig, '../figures/final/fig_box_q3.png', vector=True)
+save_fig(fig, '../figures/final/figN_box_err.png', vector=True)
 ```
 
 **环形图（模块占比，替代饼图；竞赛论文尽量少用）**
@@ -1463,11 +1495,14 @@ save_fig(fig, '../figures/final/fig_box_q3.png', vector=True)
 - 学术建议：优先柱状/折线，环形图只用于模块占比、资源分配这类构成关系
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import COLOR_INK, FIG_SQUARE, FS_ANNOT, FS_TITLE, TONE_RAMP, save_fig
 
 fig, ax = plt.subplots(figsize=FIG_SQUARE)
 labels = ['特征提取', '模型推理', '数据加载', '其他']       # ≤5 类
-sizes = [52, 30, 12, 6]
+sizes = [52, 30, 12, 6]                              # 实际量（秒），占比由 total 换算
+total = sum(sizes)
 ranks = np.empty(len(sizes), dtype=int)
 ranks[np.argsort(sizes)[::-1]] = np.arange(len(sizes))      # 0 = 最大块 → 明度最深
 wedges, _ = ax.pie(sizes, startangle=90, counterclock=False,
@@ -1475,13 +1510,13 @@ wedges, _ = ax.pie(sizes, startangle=90, counterclock=False,
     wedgeprops=dict(width=0.38, edgecolor='white', linewidth=1.2))   # width<1 → 真环形（中空），白色分隔无立体
 for w, label, value in zip(wedges, labels, sizes):          # 引线直标取代图例
     ang = np.deg2rad((w.theta1 + w.theta2) / 2)
-    ax.annotate(f'{label}\n{value:.1f}%', xy=(np.cos(ang) * 0.99, np.sin(ang) * 0.99),
+    ax.annotate(f'{label}\n{value / total * 100:.1f}%', xy=(np.cos(ang) * 0.99, np.sin(ang) * 0.99),
                 xytext=(np.cos(ang) * 1.26, np.sin(ang) * 1.26), ha='center', va='center',
                 fontsize=FS_ANNOT, color=COLOR_INK,
                 arrowprops=dict(arrowstyle='-', color=COLOR_INK, linewidth=0.6))
-ax.text(0, 0, f'合计\n{sum(sizes):.0f} s', ha='center', va='center',
+ax.text(0, 0, f'合计\n{total:.0f} s', ha='center', va='center',
         fontsize=FS_TITLE, fontweight='bold', color=COLOR_INK)   # 环心写总量
-save_fig(fig, '../figures/final/fig_ring_q4.png', vector=True)
+save_fig(fig, '../figures/final/figN_ring_share.png', vector=True)
 ```
 
 **条形图（类别名称较长或排名对比）**
@@ -1491,6 +1526,8 @@ save_fig(fig, '../figures/final/fig_ring_q4.png', vector=True)
 - 类别标签左对齐（横向天然满足）、条形统一高度；网格走 `style_axes(ax, grid='x')`
 
 ```python
+import numpy as np
+import matplotlib.pyplot as plt
 from plot_style import FIG_FULL, TONE_RAMP, annotate_bars, save_fig, style_axes
 
 fig, ax = plt.subplots(figsize=FIG_FULL)
@@ -1507,7 +1544,7 @@ annotate_bars(ax, bars, fmt='{:.3f}', orient='h')            # 条端数值统�
 ax.set_xlim(0, max(vals) * 1.12)                              # 数值轴从 0 起始
 ax.set_xlabel('mAP@0.5')
 style_axes(ax, grid='x')
-save_fig(fig, '../figures/final/fig_hbar_q5.png', vector=True)
+save_fig(fig, '../figures/final/figN_hbar_map.png', vector=True)
 ```
 
 **热力图灰度打印变体**：需黑白打印的场景（如附录矩阵图），把模板2 的发散色图 `DIVERGENT_CMAP` 换成 `SEQUENTIAL_CMAP`（浅→主角蓝单色顺序系），格线仍保持白色 `linewidths=0.6, linecolor='white'`，并在 `cbar_kws` 里标注数值区间；层级差异改由明度承担，灰度打印仍可读。
@@ -1756,11 +1793,11 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 **2. 图片文字完整性**：
 
-- matplotlib 必须设置中文字体：`plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei']`
-- 必须设置负号正常显示：`plt.rcParams['axes.unicode_minus'] = False`
-- 保存时指定 `bbox_inches='tight'`
-- 缺字体环境（Linux/macOS 容器）使用检测回退：优先探测可用中文字体（SimHei → Microsoft YaHei → Noto Sans CJK SC → WenQuanYi），全部缺失时显式警告，禁止静默输出方框
-- 图内字号与正文对应：整版宽图（约6.3in）图内标签 ≥9pt（font.size=11 满足）；图缩至半版心（约3.2in）展示时须将 `font_scale` 提至 1.3 以上，保证印刷等效字号 ≥9pt
+- matplotlib 中文字体由 `code/plot_style.py` 统一配置（`apply_style()` 内 `pick_cjk_font` 探测回退），绘图脚本内禁止再手写 `plt.rcParams['font.sans-serif']`
+- 负号正常显示同样由该模块统一设置（`axes.unicode_minus = False`），勿逐脚本重复
+- 保存时指定 `bbox_inches='tight'`（`save_fig` 默认行为）
+- 缺字体环境（Linux/macOS 容器）使用检测回退：优先探测可用中文字体（Microsoft YaHei → SimHei → Noto Sans CJK SC → WenQuanYi Micro Hei），全部缺失时显式警告，禁止静默输出方框
+- 图内字号与正文对应：按标准尺寸（`FIG_FULL` 约6.3in）出图并整版插入时，`FS_LABEL`（9.5pt）即满足 ≥9pt；图若缩至半版心（约3.2in）插入，出图字号须按缩放倍率的倒数整体放大（模板1 用 `S` 系数派生 `FS_* × S` 即此套路），保证印刷等效仍 ≥9pt
 - LaTeX中图片宽度不超过 `\textwidth`
 
 **3. 中文编码规范**：
@@ -1856,7 +1893,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 表题位置错误 | 表题在表格下方 | 表题在表格**上方** |
 | 合理性说明空洞 | "该假设合理" | "依据文献[1]，XX影响占比<3%，可忽略" |
 | 假设未被引用 | 正文中未提及假设 | 建模时显式引用"由假设X可知..." |
-| 含竖线 | `\begin{tabular}{|c|l|l|}` | `\begin{tabularx}{\textwidth}{c X X}` 配合 `\toprule` 等（长文本自动换行，防溢出） |
+| 含竖线 | `\begin{tabular}{\|c\|l\|l\|}` | `\begin{tabularx}{\textwidth}{c X X}` 配合 `\toprule` 等（长文本自动换行，防溢出） |
 | 文字溢出显示不全 | `\begin{tabular}{cll}` 长文字不换行 | 改用 `tabularx` 的 `X` 列或 `p{宽度}` 列 |
 | 表格超出版心 | 未限制总宽度 | `\begin{tabularx}{\textwidth}{...}` 锁定宽度 |
 | 表格底部被截断 | 假设过多`table`环境不跨页 | 控制在4-6条；必须更多时用`longtable` |
@@ -2328,7 +2365,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 错误类型      | 解决方案                                |
 | --------- | ----------------------------------- |
 | 中文乱码      | 使用 xelatex，删除 inputenc              |
-| 图片文字不全    | 设置 SimHei，使用 bbox\_inches='tight'   |
+| 图片文字不全    | 统一走 `save_fig`（默认 tight 防裁切；3D 图改传 `tight=False` 并由 add_axes 留边距）   |
 | 图片中文显示方框  | 缺字体环境由 `pick_cjk_font` 检测回退，安装 Microsoft YaHei / SimHei / Noto Sans CJK |
 | 折线图曲线过多难区分 | 同图≤5条，线型+标记区分，超限分图         |
 | 性能对比图Y轴不从0起 | 强制 `ax.set_ylim(0, ...)`，避免视觉误导    |
