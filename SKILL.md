@@ -11,6 +11,30 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 
 **核心风格**：学术语态、逻辑严谨、创新性强、结果可验证
 
+**引用约定**：
+
+- 阿拉伯数字「第N章」指**本 skill** 的章节（第1–8章，见「核心能力」）；中文数字「第N章」指**所产出论文**的章节（第一章至第七章，结构见第3章）。二者不得混写。
+- `§5.N` 指第5章"排版强制规范"第 N 条。该节是全部排版规则的**唯一出处**，第7章自检清单、第8章评分细则与「快速参考」只列检查项与扣分分值，判据一律指回该节。
+
+***
+
+## 使用方式
+
+**触发场景**：
+
+1. 用户上传赛题文本或粘贴赛题内容
+2. 用户提问"分析这道题"或"帮我建模"
+3. 用户要求推荐算法或编写代码
+4. 用户提交论文草稿要求润色
+5. 用户要求先联网查证赛题背景再进行分析与建模
+
+**输出风格**：
+
+- 默认使用中文输出
+- 代码块标注语言类型
+- 表格清晰对齐
+- 关键结论突出显示
+
 ***
 
 ## 工作流（强制执行）
@@ -27,16 +51,19 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
    - 检查 `PyMuPDF`（用于读取PDF数据）
    - 检查 `openpyxl`（用于读取 .xlsx 数据）；若赛题附件含旧版 `.xls` 文件，另需 `xlrd`（openpyxl 不支持 .xls 二进制格式），缺失时安装 `pip install xlrd`
    - 若缺失，自动执行 `pip install python-docx pymupdf openpyxl`
-3. **绘图库**：
-   - 检查 `matplotlib`、`seaborn`、`numpy`、`pandas`
-   - 若缺失，自动执行安装
+3. **数值与绘图库（核心，无条件检查）**：
+   - 检查 `numpy`、`pandas`、`scipy`、`matplotlib`、`seaborn`
+   - 若缺失，自动执行 `pip install numpy pandas scipy matplotlib seaborn`
    - 若需 plotly 静态导出（桑基图等），检查 `kaleido`；缺失时安装 `pip install kaleido`
 4. **Word 转换工具**：
    - 检查 `pandoc` 是否可用（LaTeX→Word 转换必需，公式自动转 OMML 原生数学格式）
    - 若缺失，提示安装 pandoc（`winget install pandoc` 或官网下载），并提醒其为系统级安装、非 pip 可装
-   - 可选：`graphviz`（复杂架构图，见第4章流程图规范）
+   - 可选：`graphviz`（复杂架构图，见第4章"流程图专项规范"）
+5. **算法专用库（阶段零不预装，延迟到阶段三补检）**：
+   - `pulp`、`cvxpy`、`scikit-learn`、`xgboost`、`networkx`、`statsmodels`、`pymoo`、`prophet`、`pywt`、`lightgbm`、`python-ortools`、`shap`、`geopandas`、`folium`、`adjustText` 按题目需要才装，阶段零一律不预装
+   - 阶段三选定算法后，对照「算法实现速查」表逐库检查可用性；缺失即装，安装失败则退化为该表给出的等价替代方法
 
-**输出**：环境状态报告（哪些可用、哪些已自动安装、哪些需用户手动处理）
+**输出**：环境状态报告（哪些可用、哪些已自动安装、哪些需用户手动处理、哪些留待阶段三补检）
 
 ### 阶段一：赛题分析与背景调研
 
@@ -55,8 +82,8 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 └── answer/         # 所有建模产出统一存放于 answer 文件夹下
     ├── code/           # Python代码（按问题编号：q1_*.py, q2_*.py；含 plot_style.py 统一样式模块）
     ├── figures/
-    │   ├── final/      # 交付图（语义命名：fig{图号}_{题型}_{内容}.png/pdf；图号未定前一律以 figN_ 占位、插入论文时替换，≥300 DPI，须被论文 .tex 引用）
-    │   └── tmp/        # 调试图（与正式版同品质 300 DPI；交付/打包前整体删除）
+    │   ├── final/      # 交付图（语义命名：fig{图号}_{题型}_{内容}.png/pdf；图号未定前一律以 figN_ 占位、插入论文时替换，分辨率按第4章分级 DPI 策略，须被论文 .tex 引用）
+    │   └── tmp/        # 调试图（与正式版同品质、同分辨率；交付/打包前整体删除）
     └── paper/          # 论文（paper.tex + paper.pdf + paper.docx）
 ```
 
@@ -64,9 +91,9 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 
 **不输出给用户**，仅在内部完成并择优：
 
-1. **候选算法生成**：针对每个小问，结合问题类型、数据规模、约束条件，从算法库中筛选 2–3 种可行算法。
+1. **候选算法生成**：针对每个小问，结合问题类型、数据规模、约束条件，从第1章算法库中筛选 2–3 种可行算法；问题特征 → 推荐算法的映射见「算法选择速查」。
 2. **内部比对**：从求解精度、计算复杂度、鲁棒性、可解释性、实现可行性五个维度，对候选算法进行量化或定性评估。
-3. **择优决策**：选择综合质量更优的算法作为本问的求解方案，直接进入阶段四的代码实现与论文写作。
+3. **择优决策**：选择综合质量更优的算法作为本问的求解方案，直接进入阶段四的代码实现与论文写作。选定后按阶段零第 5 项对照「算法实现速查」补检该算法所需库。
 
 **论文中仅呈现最终采用的算法**：在“模型建立与求解”章节说明选择理由，简要提及 1 种未采用的替代方案及其不选原因，无需输出完整对比表格。
 
@@ -92,7 +119,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 - 使用 numpy 向量化操作
 - 关键参数通过注释说明
 - 输出清晰的结果摘要
-- 可视化保存至 `figures/final/`，学术风格，≥300 DPI，样式与配色遵循第 4 章可视化规范，建议使用统一样式模块 `code/plot_style.py`（见第 4 章）
+- 可视化保存至 `figures/final/`，学术风格，分辨率按第4章分级 DPI 策略，样式与配色遵循第4章可视化规范，建议使用统一样式模块 `code/plot_style.py`（见第4章）
 
 ### 阶段五：论文输出
 
@@ -120,11 +147,15 @@ pandoc paper.tex -o paper.docx
 
 - LaTeX：xelatex 编译
 - Word：pandoc 从 LaTeX 转换生成 .docx（公式自动转为 OMML，见上方生成命令）
-- Word 版式微调：python-docx 补充页眉留空/页码/字体（公式勿用 python-docx 手工插入）
+- Word 版式微调：python-docx 补充页眉留空/页码/字体（公式勿用 python-docx 手工插入，模块见第5章"Word 文档后处理模块"）
+
+**规范出处**：论文结构与摘要/正文写作要求见第3章；LaTeX 页面设置、排版强制规范与模板见第5章；参考文献格式与查证见第6章。
 
 ### 阶段六：论文评分与优化（强制执行）
 
 论文生成后，**必须**按百分制评分体系进行量化评估。低于 85 分须针对性优化后重新评分，**≥85 分方可最终输出**。
+
+**规范出处**：评分维度、权重与逐项扣分细则见第8章；扣分项的具体修复动作对照第7章论文质量自检清单。
 
 **评分流程**：
 
@@ -314,168 +345,6 @@ def read_excel(file_path):
         return pd.read_excel(file_path, engine='xlrd')   # 需 pip install xlrd
     return pd.read_excel(file_path, engine='openpyxl')
 ```
-
-#### Word 文档后处理模块（python-docx，用于 pandoc 转换后的版式微调）
-
-> ⚠️ **角色定位（重要）**：Word 文档由 **pandoc 从 paper.tex 转换生成**（见阶段五生成命令），公式已自动转为 OMML 原生数学格式。下方 python-docx 脚本**仅用于 pandoc 转换后的版式微调**（页眉留空、页码页脚、中文字体、三线表核对），**不得用它从头生成全文或手工插入公式**，否则 Word 中将丢失全部数学公式。
-
-```python
-from docx import Document
-from docx.shared import Pt, Cm
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
-
-
-def set_cjk_font(run, font_name='宋体', size=Pt(12), bold=False):
-    """统一设置中西文字体与字号（先设西文名确保 rPr/rFonts 存在，再设中文名）"""
-    run.font.name = font_name
-    run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
-    run.font.size = size
-    run.bold = bold
-
-
-def set_three_line_table(table):
-    """设置三线表样式：顶线粗、底线粗、表头下线细，无竖线"""
-    tbl = table._tbl
-    tblPr = tbl.tblPr
-    if tblPr is None:
-        tblPr = OxmlElement('w:tblPr')
-        tbl.insert(0, tblPr)
-    # 删除默认边框
-    borders = OxmlElement('w:tblBorders')
-    for edge in ('top', 'bottom', 'left', 'right', 'insideV', 'insideH'):
-        elem = OxmlElement(f'w:{edge}')
-        elem.set(qn('w:val'), 'none')
-        elem.set(qn('w:sz'), '0')
-        elem.set(qn('w:space'), '0')
-        elem.set(qn('w:color'), '000000')
-        borders.append(elem)
-    # 顶线（粗 1.5pt）
-    top = borders.find(qn('w:top'))
-    top.set(qn('w:val'), 'single')
-    top.set(qn('w:sz'), '12')
-    # 底线（粗 1.5pt）
-    bottom = borders.find(qn('w:bottom'))
-    bottom.set(qn('w:val'), 'single')
-    bottom.set(qn('w:sz'), '12')
-    tblPr.append(borders)
-    # 表头行底部加细线（0.5pt）
-    if len(table.rows) > 1:
-        for cell in table.rows[0].cells:
-            tcPr = cell._tc.get_or_add_tcPr()
-            cell_borders = OxmlElement('w:tcBorders')
-            btm = OxmlElement('w:bottom')
-            btm.set(qn('w:val'), 'single')
-            btm.set(qn('w:sz'), '4')
-            btm.set(qn('w:space'), '0')
-            btm.set(qn('w:color'), '000000')
-            cell_borders.append(btm)
-            tcPr.append(cell_borders)
-
-
-def set_cell_center(cell, text=None, font_name='宋体', font_size=Pt(12)):
-    """设置单元格文字上下左右居中（text=None 时仅调整既有内容样式，不重建内容）"""
-    if text is not None:
-        cell.text = ''
-    p = cell.paragraphs[0]
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER  # 水平居中
-    if text is None:
-        for r in p.runs:
-            set_cjk_font(r, font_name, font_size)
-    else:
-        run = p.add_run(text)
-        set_cjk_font(run, font_name, font_size)
-    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER  # 垂直居中
-
-
-def restyle_word_paper(doc_path='../paper/paper.docx'):
-    """pandoc 转换后的版式微调：仅调整既有内容的样式（页边距/页眉页脚/字体/三线表），
-    禁止 add_paragraph/add_table 新增或重建任何内容，否则会在 pandoc 文档后追加重复全文"""
-    doc = Document(doc_path)  # 读取 pandoc 转换结果
-
-    # ---- 页面设置：A4，四边2.5cm；页眉留空；页脚居中页码 ----
-    for section in doc.sections:
-        section.page_width = Cm(21.0)
-        section.page_height = Cm(29.7)
-        section.top_margin = Cm(2.5)
-        section.bottom_margin = Cm(2.5)
-        section.left_margin = Cm(2.5)
-        section.right_margin = Cm(2.5)
-        # 页眉必须留空（匿名规范）
-        for p in section.header.paragraphs:
-            p.text = ''
-        # 页脚：居中页码（插入 PAGE 域，Word 打开时自动更新）
-        footer = section.footer
-        footer.is_linked_to_previous = False
-        fp = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
-        fp.text = ''
-        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run = fp.add_run()
-        fld_begin = OxmlElement('w:fldChar')
-        fld_begin.set(qn('w:fldCharType'), 'begin')
-        instr = OxmlElement('w:instrText')
-        instr.set(qn('xml:space'), 'preserve')
-        instr.text = 'PAGE'
-        fld_end = OxmlElement('w:fldChar')
-        fld_end.set(qn('w:fldCharType'), 'end')
-        for el in (fld_begin, instr, fld_end):
-            run._element.append(el)
-
-    # ---- 遍历既有段落，按样式/内容特征微调（不新增任何段落） ----
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        style_name = para.style.name if para.style is not None else ''
-        if style_name.startswith('Title'):            # 论文题目：三号黑体居中
-            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            for r in para.runs:
-                set_cjk_font(r, '黑体', Pt(16), bold=True)
-        elif style_name.startswith('Heading 1'):      # 一级标题：四号黑体居中
-            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            for r in para.runs:
-                set_cjk_font(r, '黑体', Pt(14), bold=True)
-        elif text.startswith('摘要'):                  # 摘要标签段：四号黑体
-            for r in para.runs:
-                set_cjk_font(r, '黑体', Pt(14), bold=True)
-        else:                                          # 正文：小四宋体，1倍行距，首行缩进2字符
-            para.paragraph_format.line_spacing = 1
-            para.paragraph_format.first_line_indent = Cm(0.85)
-            for r in para.runs:
-                set_cjk_font(r, '宋体', Pt(12))
-    
-    # ---- 既有表格统一三线表样式 + 单元格文字居中（不新建表格） ----
-    for table in doc.tables:
-        set_three_line_table(table)
-        for row in table.rows:
-            for cell in row.cells:
-                cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-                for p in cell.paragraphs:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    # 保存（覆盖写回 pandoc 结果）
-    doc.save(doc_path)
-    print(f'Word 版式微调完成：{doc_path}')
-
-# 执行微调（在 code/ 目录下运行，读写 ../paper/paper.docx）
-restyle_word_paper()
-```
-
-**Word文档格式要点**：
-
-- 中文字体设置：`run._element.rPr.rFonts.set(qn('w:eastAsia'), '字体名')`
-- 西文字体：Times New Roman（默认或显式设置）
-- 行距：1倍（`paragraph_format.line_spacing = 1`）
-- 首行缩进：2字符（约0.85cm）
-- **分页沿用 pandoc 结果**：后处理禁止 `add_paragraph`/`add_table`/`add_page_break` 新增任何内容，仅调整既有样式
-- **页眉必须留空**：禁止任何页眉文字、线条或图片
-- **页码页脚居中**：从第一页（摘要页）开始编号（摘要页为第1页），全文连续
-- **匿名要求**：摘要页、正文、附录任何位置禁止出现参赛者姓名、学校、赛区、队号、指导教师等信息
-- **公式必须为 Word 原生数学格式（OMML）**：居中、可在 Word 公式编辑器中编辑；**禁止用普通文本或图片模拟公式**
-- **检测量公式（R²/MAE/RMSE/MAPE）全文只出现一次完整定义**，后续仅引用指标名+数值
-- **已知限制**：pandoc 对 ctex/xelatex 专用宏包解析有限，转换前需用 pandoc 支持的等价写法或轻量预处理（如临时替换 ctex 为 CJK 包），转换后必须核对并修正中文字体/字号与三线表，再执行第7章"PDF 与 Word 格式一致性检查"
 
 ***
 
@@ -762,15 +631,15 @@ restyle_word_paper()
 #### 强制要求
 
 - **每道小题至少1张彩色图**（建议2-3张）
-- **第二章问题分析必须插入问题分析图**：至少1张流程图/技术路线/系统架构图，展示整体解决思路（绘制规范详见第 4 章"流程图专项规范"）
-- **全文图片数量**：建议全文6张以上，保底不低于4张；同一小问有必要时可多插入几张（如多组对比、多阶段结果）
+- **第二章问题分析必须插入问题分析图**：至少1张流程图/技术路线/系统架构图，展示整体解决思路（绘制规范详见第4章"流程图专项规范"）
+- **全文图片数量**：全文合计不低于 4 张、建议 6 张以上；当小问数多于 4 时，上一条"每问至少 1 张"更严，以它为准。同一小问有必要时可多插入几张（如多组对比、多阶段结果）
 - **插入位置合适**：图片须紧邻其对应分析文字就近插入（图题在图下方），随分析段落"边叙述边配图"或"先分析后配图"，**禁止**把所有图片集中堆放在章节末尾或文末；每张图前后必须有文字引导与解读，禁止图表孤立出现
 - **图型跟随数据结构，匹配时优先高端效果**：图表类型由数据结构与表达目标决定；数据适用时优先采用三维曲面图、热力图、等高线图、网络/关系图、平行坐标图等高级优质图表提升表现力（详见下方推荐图表类型表与「图型创新与跨图统一」）；**图库不是边界**——表内与模板覆盖不到的图型按结论需要现绘，不必硬套最接近的模板；基础图型（折线/柱状/饼）仍是表达主力，禁止为视觉效果强行升级图型（如收敛曲线强改三维曲面）
 - **组合图规范**：双轴图（同一主题的多量纲指标同图，如左右轴分别表示数值与占比/速率）**可以使用**；**禁止将多张不相干图硬凑成组合图**——多子图组合仅限同主题的关联子图（如拟合图+残差图、多方法对比），每个子图须在正文中分别解读
 - **图内文字防重叠**：图例不遮挡数据（frameon=False 或指定位置）；坐标轴标签过长时旋转/换行；数据点标注自动避让（offset/bbox/adjustText）；密集数据仅标注关键点，禁止文字互相重叠遮挡
 - **拟合结果必须可视化**：拟合曲线 vs 原始数据
 - **误差分析必须可视化**：残差图、误差分布图
-- **所有图表必须具备出版级质量**：分辨率≥300 DPI，矢量格式优先；密度类图（大规模散点/hexbin/3D曲面）可降至 200 DPI，线条/柱状类优先矢量 PDF（分级策略见 plot_style.py 说明）
+- **所有图表必须具备出版级质量**（全文 DPI 口径的**唯一出处**：阶段二目录规范与阶段四代码规范均引用本条，不另立数值）：分辨率≥300 DPI，矢量格式优先；密度类图（大规模散点/hexbin/3D曲面）可降至 200 DPI，线条/柱状类优先矢量 PDF（分级策略见 plot_style.py 说明）
 - **预览与正式版同品质**：调试/预览图（含 `figures/tmp/`、示范图）与交付图同一品质——一律 `savefig.dpi=300` 保存（密度类图可按分级策略降至 200），禁止生成低分辨率预览图
 - **全局-局部互补**：时序类结果应附关键时段局部放大图；分配/调度类结果应附关键资源利用率视图，与全局图互补，避免局部特征被遗漏
 
@@ -819,6 +688,8 @@ restyle_word_paper()
 | 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
 | 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
 
+> **本章图表指引分三层，按需取用**：①「高频图表代码模板」——竞赛高频图型，直接给可跑代码；②「高级图表配色要点」——无内置模板的进阶图型（散点/气泡、雷达、桑基/和弦、地图热力、平行坐标），只给配色规则，图型自己画；③「基础图型绘制规范与代码模板」——折线/柱状/箱线/环形/条形，规则 + 代码都给。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。
+
 > 上表中未内置代码模板的进阶图型：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
 
 > 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范与代码模板见下文「基础图型绘制规范与代码模板」。
@@ -841,7 +712,7 @@ restyle_word_paper()
 3. 颜色只承担身份/方向/层级三职责（见「Nature 风格配色」四条不变式）
 4. 文字最少且可读：禁 mathtext 与中文混排；系列 ≤5 优先线尾/条端直接标注取代图例
 5. 证据完整：置信带、误差棒、`R²`/RMSE/n 该显示就显示；显示每一次观测，别只画均值
-6. 出图后必看渲染产物（自检项见第 7 章清单）——代码跑通不等于图没问题
+6. 出图后必看渲染产物（自检项见第7章"论文质量自检清单"）——代码跑通不等于图没问题
 
 **跨图风格统一契约**（全文强制，创新图不豁免）
 
@@ -883,14 +754,6 @@ save_fig(fig, '../figures/final/figN_custom_explore.png', vector=True)
 多子图主次分明用 `gs = fig.add_gridspec(2, 2, width_ratios=[1.5, 1], hspace=0.45, wspace=0.3)` + `add_panel_label(ax, 'a')`：hero 面板不得与陪衬等大，每个子图回答一个**唯一**问题，同指标子图共享上下限（`sharey=True`）。
 
 **反哺规则**：同一图型在论文里出现 ≥2 次、或属竞赛高频图型，就按模板 1–5 的写法把它登记进下文「高频图表代码模板」，后续复用而不是每次现绘。
-
-#### 高级图表配色要点
-
-- **散点/气泡图**：单系列主角蓝 `COLOR_MAIN` α0.5–0.6（重叠自然加深体现密度）；离群点/关键解用 `ACCENT_ORANGE` + 白描边并放大；多系列按 `identity_color(i)` 取色；叠加拟合线用主角蓝加粗
-- **雷达图**：填充主角蓝 α0.2（极淡不遮网格）；轮廓主角蓝 2pt 实线；对比模型取次系列身份色虚线、填充 α0.1；网格线 `NEUTRAL_LIGHT`
-- **桑基图/和弦图**：节点按身份色序列着色；连线（流量）半透明 0.4–0.6 且**颜色继承起始节点**，便于追踪流量归属
-- **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层用 `SEQUENTIAL_CMAP` 单色顺序系；**禁红绿配色**（色盲不友好）
-- **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3–0.5；按类别取 `identity_color(i)`；图例置于图外防重叠
 
 #### Nature 风格配色（必须使用）
 
@@ -1377,6 +1240,14 @@ ax.legend(frameon=False, loc='upper right')
 save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 ```
 
+#### 高级图表配色要点
+
+- **散点/气泡图**：单系列主角蓝 `COLOR_MAIN` α0.5–0.6（重叠自然加深体现密度）；离群点/关键解用 `ACCENT_ORANGE` + 白描边并放大；多系列按 `identity_color(i)` 取色；叠加拟合线用主角蓝加粗
+- **雷达图**：填充主角蓝 α0.2（极淡不遮网格）；轮廓主角蓝 2pt 实线；对比模型取次系列身份色虚线、填充 α0.1；网格线 `NEUTRAL_LIGHT`
+- **桑基图/和弦图**：节点按身份色序列着色；连线（流量）半透明 0.4–0.6 且**颜色继承起始节点**，便于追踪流量归属
+- **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层用 `SEQUENTIAL_CMAP` 单色顺序系；**禁红绿配色**（色盲不友好）
+- **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3–0.5；按类别取 `identity_color(i)`；图例置于图外防重叠
+
 #### 基础图型绘制规范与代码模板（折线/柱状/箱线/环形/条形）
 
 > 高频基础图型的逐项规范，与上方 Nature 配色及 `plot_style.py` 统一样式模块配套：取色只用语义常量，坐标框架一律 `style_axes()`，数值标注一律 `annotate_bars()`；强调黑白打印/色盲场景的明暗区分（纹理仅多组年份等场景可选）。热力图灰度打印变体见本节末注意事项。
@@ -1748,10 +1619,6 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 > 复杂系统架构图（模块多、层级深）可选用 graphviz（`pip install graphviz`），但需保持同一套样式规范（圆角扁平方框、纹理区分、深灰主箭头、单色线性图标）。
 
-#### 可视化要求清单
-
-> 本清单不设单独维护的条目：出图自检直接对照本章"强制要求"、各"基础图型绘制规范"与"高级图表配色要点"（唯一权威出处），论文成稿阶段按第 7 章"论文质量自检清单"中图表相关项复核。
-
 ***
 
 ### 5. 排版规范（LaTeX）
@@ -1770,10 +1637,12 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 西文/数字 | Times New Roman，小四（12pt）                   |
 | 数学公式  | Times New Roman，小四，居中，右侧编号；跨行公式整体居中、编号在右侧 |
 | 图表标题  | 宋体，五号，居中（图下表上）                             |
-| 页码    | 页尾居中，从第一页（摘要页）开始编号，摘要页即为第1页；全文禁止页眉                     |
+| 页码    | 页尾居中，从摘要页（第1页）起连续编号；全文禁止页眉（口径与命令的唯一出处为 §5.0）                     |
 | 总页数   | 正文25-30页，附录不做页数要求                        |
 
 #### 排版强制规范
+
+> **本节 §0–§11 是全部排版规则的唯一出处**：第7章自检清单与第8章评分细则只列检查项与扣分分值，判据一律指回本节，不另存副本。
 
 **0. 匿名与保密要求（一票否决，违反即取消评奖资格）**：
 
@@ -1789,7 +1658,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 - 摘要页边距 = 正文页边距（四边均为2.5cm）
 - 摘要字号 = 正文字号（`\normalsize`）
 - 首行缩进 = 正文首行缩进（`2em`）
-- 摘要页加页码（第1页）
+- 摘要页页码：口径与命令见 §5.0，本节不另定
 
 **2. 图片文字完整性**：
 
@@ -1819,11 +1688,11 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 **5. 分页规则（强制执行）**：
 
-- **摘要页**：题目 + 摘要 + 关键词，三者必须在同一页内完成，**摘要页为第1页**，页码底部居中
+- **摘要页**：题目 + 摘要 + 关键词，三者必须在同一页内完成（本页即第1页、页码页尾居中，口径见 §5.0）
 - **正文**：从第2页开始连续编号，各章节之间自然衔接，不强制分页
 - **参考文献**：正文结束后，使用`\newpage`另起一页，页码连续
 - **附录（支撑材料）**：参考文献结束后，使用`\newpage`另起一页，页码连续
-- **禁止**将摘要或关键词挤到第二页；若空间不足，须压缩摘要字数（控制在1000字以内）
+- **禁止**将摘要或关键词挤到第二页；若空间不足，须压缩摘要字数（压回第3章规定的 800-1000 字区间，不得低于下限）
 
 **6. 数学符号与字体规范**：
 
@@ -2038,6 +1907,167 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 \end{document}
 ```
 
+#### Word 文档后处理模块（python-docx，用于 pandoc 转换后的版式微调）
+
+> ⚠️ **角色定位（重要）**：Word 文档由 **pandoc 从 paper.tex 转换生成**（见阶段五生成命令），公式已自动转为 OMML 原生数学格式。下方 python-docx 脚本**仅用于 pandoc 转换后的版式微调**（页眉留空、页码页脚、中文字体、三线表核对），**不得用它从头生成全文或手工插入公式**，否则 Word 中将丢失全部数学公式。
+
+```python
+from docx import Document
+from docx.shared import Pt, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+
+
+def set_cjk_font(run, font_name='宋体', size=Pt(12), bold=False):
+    """统一设置中西文字体与字号（先设西文名确保 rPr/rFonts 存在，再设中文名）"""
+    run.font.name = font_name
+    run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
+    run.font.size = size
+    run.bold = bold
+
+
+def set_three_line_table(table):
+    """设置三线表样式：顶线粗、底线粗、表头下线细，无竖线"""
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+    # 删除默认边框
+    borders = OxmlElement('w:tblBorders')
+    for edge in ('top', 'bottom', 'left', 'right', 'insideV', 'insideH'):
+        elem = OxmlElement(f'w:{edge}')
+        elem.set(qn('w:val'), 'none')
+        elem.set(qn('w:sz'), '0')
+        elem.set(qn('w:space'), '0')
+        elem.set(qn('w:color'), '000000')
+        borders.append(elem)
+    # 顶线（粗 1.5pt）
+    top = borders.find(qn('w:top'))
+    top.set(qn('w:val'), 'single')
+    top.set(qn('w:sz'), '12')
+    # 底线（粗 1.5pt）
+    bottom = borders.find(qn('w:bottom'))
+    bottom.set(qn('w:val'), 'single')
+    bottom.set(qn('w:sz'), '12')
+    tblPr.append(borders)
+    # 表头行底部加细线（0.5pt）
+    if len(table.rows) > 1:
+        for cell in table.rows[0].cells:
+            tcPr = cell._tc.get_or_add_tcPr()
+            cell_borders = OxmlElement('w:tcBorders')
+            btm = OxmlElement('w:bottom')
+            btm.set(qn('w:val'), 'single')
+            btm.set(qn('w:sz'), '4')
+            btm.set(qn('w:space'), '0')
+            btm.set(qn('w:color'), '000000')
+            cell_borders.append(btm)
+            tcPr.append(cell_borders)
+
+
+def set_cell_center(cell, text=None, font_name='宋体', font_size=Pt(12)):
+    """设置单元格文字上下左右居中（text=None 时仅调整既有内容样式，不重建内容）"""
+    if text is not None:
+        cell.text = ''
+    p = cell.paragraphs[0]
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER  # 水平居中
+    if text is None:
+        for r in p.runs:
+            set_cjk_font(r, font_name, font_size)
+    else:
+        run = p.add_run(text)
+        set_cjk_font(run, font_name, font_size)
+    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER  # 垂直居中
+
+
+def restyle_word_paper(doc_path='../paper/paper.docx'):
+    """pandoc 转换后的版式微调：仅调整既有内容的样式（页边距/页眉页脚/字体/三线表），
+    禁止 add_paragraph/add_table 新增或重建任何内容，否则会在 pandoc 文档后追加重复全文"""
+    doc = Document(doc_path)  # 读取 pandoc 转换结果
+
+    # ---- 页面设置：A4，四边2.5cm；页眉留空；页脚居中页码 ----
+    for section in doc.sections:
+        section.page_width = Cm(21.0)
+        section.page_height = Cm(29.7)
+        section.top_margin = Cm(2.5)
+        section.bottom_margin = Cm(2.5)
+        section.left_margin = Cm(2.5)
+        section.right_margin = Cm(2.5)
+        # 页眉必须留空（匿名规范）
+        for p in section.header.paragraphs:
+            p.text = ''
+        # 页脚：居中页码（插入 PAGE 域，Word 打开时自动更新）
+        footer = section.footer
+        footer.is_linked_to_previous = False
+        fp = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
+        fp.text = ''
+        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = fp.add_run()
+        fld_begin = OxmlElement('w:fldChar')
+        fld_begin.set(qn('w:fldCharType'), 'begin')
+        instr = OxmlElement('w:instrText')
+        instr.set(qn('xml:space'), 'preserve')
+        instr.text = 'PAGE'
+        fld_end = OxmlElement('w:fldChar')
+        fld_end.set(qn('w:fldCharType'), 'end')
+        for el in (fld_begin, instr, fld_end):
+            run._element.append(el)
+
+    # ---- 遍历既有段落，按样式/内容特征微调（不新增任何段落） ----
+    for para in doc.paragraphs:
+        text = para.text.strip()
+        if not text:
+            continue
+        style_name = para.style.name if para.style is not None else ''
+        if style_name.startswith('Title'):            # 论文题目：三号黑体居中
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for r in para.runs:
+                set_cjk_font(r, '黑体', Pt(16), bold=True)
+        elif style_name.startswith('Heading 1'):      # 一级标题：四号黑体居中
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for r in para.runs:
+                set_cjk_font(r, '黑体', Pt(14), bold=True)
+        elif text.startswith('摘要'):                  # 摘要标签段：四号黑体
+            for r in para.runs:
+                set_cjk_font(r, '黑体', Pt(14), bold=True)
+        else:                                          # 正文：小四宋体，1倍行距，首行缩进2字符
+            para.paragraph_format.line_spacing = 1
+            para.paragraph_format.first_line_indent = Cm(0.85)
+            for r in para.runs:
+                set_cjk_font(r, '宋体', Pt(12))
+    
+    # ---- 既有表格统一三线表样式 + 单元格文字居中（不新建表格） ----
+    for table in doc.tables:
+        set_three_line_table(table)
+        for row in table.rows:
+            for cell in row.cells:
+                cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+                for p in cell.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # 保存（覆盖写回 pandoc 结果）
+    doc.save(doc_path)
+    print(f'Word 版式微调完成：{doc_path}')
+
+# 执行微调（在 code/ 目录下运行，读写 ../paper/paper.docx）
+restyle_word_paper()
+```
+
+**Word文档格式要点**：
+
+- 中文字体设置：`run._element.rPr.rFonts.set(qn('w:eastAsia'), '字体名')`
+- 西文字体：Times New Roman（默认或显式设置）
+- 行距：1倍（`paragraph_format.line_spacing = 1`）
+- 首行缩进：2字符（约0.85cm）
+- 上述字体/字号/行距/缩进的**目标值以本章"页面设置"表为唯一出处**，脚本只负责按该表落地，不另立数值
+- **分页沿用 pandoc 结果**：后处理禁止 `add_paragraph`/`add_table`/`add_page_break` 新增任何内容，仅调整既有样式
+- **页眉必须留空、页码页脚居中、匿名要求**：判据见 §5.0，本节不重述适用范围与命令
+- **公式必须为 Word 原生数学格式（OMML）**：居中、可在 Word 公式编辑器中编辑；**禁止用普通文本或图片模拟公式**
+- **检测量公式全文只出现一次完整定义**，后续仅引用指标名+数值（指标清单与判据见第3章"公式使用规范"）
+- **已知限制**：pandoc 对 ctex/xelatex 专用宏包解析有限，转换前需用 pandoc 支持的等价写法或轻量预处理（如临时替换 ctex 为 CJK 包），转换后必须核对并修正中文字体/字号与三线表，再执行第7章"PDF 与 Word 格式一致性检查"
+
 ***
 
 ### 6. 参考文献规范
@@ -2073,22 +2103,24 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 ### 7. 论文质量自检清单
 
+> **本章只列检查项，不重述规则**：修复方法一律指向规则的唯一出处（§ 记法见「核心定位 · 引用约定」）。规则若有改动只改出处一处，本章与第8章不另存副本。
+
 #### [致命] 匿名与保密（一票否决，违反直接取消评奖资格）
 
 | 检查项  | 修复方法                             |
 | ---- | -------------------------------- |
-| 摘要页/正文/附录出现参赛者姓名、学校、赛区、队号、指导教师 | 全文删除（含文字、图片水印、页眉页脚、代码注释、文件名） |
-| 存在页眉或页眉横线 | 清空页眉内容并设 `\renewcommand{\headrulewidth}{0pt}` |
-| 页码未从摘要页（第1页）开始 | 全文 `\pagestyle{fancy}`，`\maketitle` 后加 `\thispagestyle{fancy}` |
-| 页码未页尾居中 | `\fancyfoot[C]{\thepage}`，确保 `\fancyhf{}` 后页脚仅剩居中页码 |
+| 摘要页/正文/附录出现参赛者姓名、学校、赛区、队号、指导教师 | §5.0 |
+| 存在页眉或页眉横线 | §5.0 |
+| 页码未从摘要页（第1页）开始 | §5.0 + 第5章 LaTeX 模板页眉页脚段 |
+| 页码未页尾居中 | §5.0 + 第5章 LaTeX 模板页眉页脚段 |
 
 #### [致命] 中文编码问题
 
 | 检查项  | 修复方法                             |
 | ---- | -------------------------------- |
-| 文件编码 | 保存为 UTF-8（无BOM）                  |
-| 中文乱码 | 使用 xelatex 编译                    |
-| 宏包冲突 | 删除 `\usepackage[utf8]{inputenc}` |
+| 文件编码非 UTF-8（无BOM） | §5.3 |
+| 中文乱码 | §5.3 |
+| 宏包冲突（inputenc 与 ctex 并存） | §5.3 |
 
 #### [严重] 输出文件完整性
 
@@ -2098,12 +2130,8 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 #### [严重] PDF 与 Word 格式一致性检查（重点）
 
-- 重点检查 Word 文档格式，须与 PDF 一致：
-  - 题目：三号黑体居中；摘要标签：四号黑体
-  - 正文：小四宋体，1倍行距，首行缩进2字符
-  - 一级标题：四号黑体居中；二级标题：小四黑体左对齐
-  - 三线表（无竖线）、图题在下、表题在上
-  - 页码位置一致
+- 重点检查 Word 文档格式须与 PDF 一致。**目标值不在本节另列**：字体/字号/行距/缩进以第5章"页面设置"表为唯一出处，三线表与图表标题位置以 §5.7 为准，页码与页眉以 §5.0 为准。
+- 逐项核对 Word 的实际渲染结果与上述出处的目标值是否相符：题目、摘要标签、正文、一级标题、二级标题、三线表（无竖线）、图题在下表题在上、页码位置
 - **不强制要求** Word 中标号的交叉引用与超链接，不因缺少交叉引用扣分
 
 #### [严重] 摘要与正文一致性
@@ -2127,16 +2155,21 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 #### [中等] 公式、图表完整性
 
+**公式类**（判据唯一出处：第3章"公式使用规范"）
+
 - 公式编号连续，无重复
-- 跨行公式整体居中，编号位于右侧
 - 核心公式（目标函数/关键约束/状态方程）已作为编号公式插入且被正文引用
-- R²/MAE/RMSE/MAPE 等检测量公式仅首次定义一次，后续仅引用名称+数值
+- 检测量公式仅首次定义一次，后续仅引用名称+数值
 - 无过度详细的分步推导公式堆砌
-- Word 版公式为 OMML 数学格式且居中（可在公式编辑器编辑），非文本/图片模拟
+- 跨行公式整体居中，编号位于右侧（§5.4）
+- Word 版公式为 OMML 数学格式且居中（可在公式编辑器编辑），非文本/图片模拟（第5章"Word 文档后处理模块"）
+
+**图表类**（判据唯一出处：第4章"可视化规范" + §5.7）
+
 - 图表编号连续，无跳跃
-- 图题在下，表题在上
-- 三线表格式（无竖线）
-- 第二章必须含问题分析图（流程图/技术路线图），符合流程图专项规范
+- 图题在下，表题在上（§5.7）
+- 三线表格式（无竖线）（§5.7）
+- 第二章必须含问题分析图（流程图/技术路线图），符合第4章"流程图专项规范"
 - 性能对比图坐标轴从 0 起始；折线图同图曲线≤5条
 - 多组图形按 Nature 三职责取色（身份色 + `TONE_RAMP` 明度/透明度区分），灰度打印可辨识（不默认斜线/圆点纹理）
 - 图内文字（标题/轴标签/图例/colorbar/注解）语言统一：未特别要求时全为中文，无中英混排（明确要求全英文时除外）
@@ -2203,7 +2236,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 缺少具体数值结果（仅定性描述） | -8 |
 | 未体现问题间递进关系 | -5 |
 | 字数超出 800-1000 字范围 | -3 |
-| 缺少误差/不确定度分析 | -4 |
+| 摘要未写出误差/不确定度结论 | -4（仅判**摘要是否陈述**；正文是否实做归"算法/模型正确性"维度） |
 
 **2. 算法/模型正确性（20分）**
 
@@ -2216,7 +2249,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 题目明确要求的基线/对照缺失 | -5 |
 | 解集/最优性论证不足（多目标仅靠人为权重集无全域 Pareto；优化缺最优性间隙或精确法对照） | -3 |
 | 算法介绍通用模板化、未结合问题，超参选取逻辑未阐释 | -4 |
-| 缺少误差分析/敏感性分析/对比实验 | 每缺一项 -2（若已在摘要维度扣过"缺少误差/不确定度分析"，此处不重复扣） |
+| 正文未实做误差分析/敏感性分析/对比实验 | 每缺一项 -2（仅判**正文是否实做**；摘要是否陈述归"摘要"维度） |
 
 **3. 创新性（20分）**
 
@@ -2239,7 +2272,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 | 检查项 | 扣分标准 |
 | ------ | -------- |
-| **出现参赛者身份/学校/赛区信息，或存在页眉（一票否决）** | **直接淘汰，不计分** |
+| **出现参赛者身份/学校/赛区信息，或存在页眉（判据见 §5.0，一票否决）** | **直接淘汰，不计分** |
 | 页码未从摘要页（第1页）开始，或未页尾居中 | -2 |
 | 变量/符号前后不一致 | 每处 -2 |
 | 公式编号不连续或重复 | -2 |
@@ -2252,8 +2285,8 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 | 假设条数不在4-6条范围 | -1 |
 | 正文中未显式引用假设编号 | -2 |
 | 跨行公式未居中或右侧缺编号 | 每处 -1 |
-| 核心公式缺失或未编号（目标函数/关键约束） | -2（若已在"算法/模型正确性"维度扣过"目标函数或约束条件缺失"，此处不重复扣） |
-| 检测量公式重复列出 / 公式过度堆砌 | 每处 -1 |
+| 核心公式未作为独立编号公式呈现（缺编号或未居中；**公式内容本身缺失不计此项**，归"算法/模型正确性"维度） | -2 |
+| 检测量公式重复列出 / 公式过度堆砌（判据见第3章"公式使用规范"） | 每处 -1 |
 | Word 中公式为文本/图片模拟，非数学格式 | -2 |
 | Word 格式与 PDF 不一致（字体/字号/行距/缩进/标题层级/三线表） | 每处 -1 |
 | PDF 无书签，或段末跨页空白较大 | -1 |
@@ -2288,25 +2321,6 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 ***
 
-## 使用方式
-
-**触发场景**：
-
-1. 用户上传赛题文本或粘贴赛题内容
-2. 用户提问"分析这道题"或"帮我建模"
-3. 用户要求推荐算法或编写代码
-4. 用户提交论文草稿要求润色
-5. 用户要求先联网查证赛题背景再进行分析与建模
-
-**输出风格**：
-
-- 默认使用中文输出
-- 代码块标注语言类型
-- 表格清晰对齐
-- 关键结论突出显示
-
-***
-
 ## 快速参考
 
 ### 算法选择速查
@@ -2330,7 +2344,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 ### 算法实现速查
 
-> 原则：有成熟库的方法优先调用，禁止手动重复实现已有算法；自写代码集中于无现成实现的方法（评价赋权、灰色预测、仿真框架等）。需单独安装的库先在阶段零环境预检中检查可用性，安装失败时退化为等价替代方法。
+> 原则：有成熟库的方法优先调用，禁止手动重复实现已有算法；自写代码集中于无现成实现的方法（评价赋权、灰色预测、仿真框架等）。需单独安装的库按阶段零第 5 项，在阶段三选定算法后对照本表补检可用性，安装失败时退化为等价替代方法。
 
 | 算法/方法类别 | 推荐实现 |
 | -------------- | ------------------------ |
@@ -2364,7 +2378,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 | 错误类型      | 解决方案                                |
 | --------- | ----------------------------------- |
-| 中文乱码      | 使用 xelatex，删除 inputenc              |
+| 中文乱码      | 见 §5.3              |
 | 图片文字不全    | 统一走 `save_fig`（默认 tight 防裁切；3D 图改传 `tight=False` 并由 add_axes 留边距）   |
 | 图片中文显示方框  | 缺字体环境由 `pick_cjk_font` 检测回退，安装 Microsoft YaHei / SimHei / Noto Sans CJK |
 | 折线图曲线过多难区分 | 同图≤5条，线型+标记区分，超限分图         |
