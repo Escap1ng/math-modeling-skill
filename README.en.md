@@ -76,11 +76,11 @@ Final output ← Stage 6 score ≥ 85? → Stage 5 paper output ← Stage 4 code
 
 | Stage | Work |
 | :--- | :--- |
-| Stage 0 · Environment check | Verify xelatex / pandoc / Python deps and plotting libraries; auto-install what is missing; output a status report |
-| Stage 1 · Problem analysis | Web research on background; classify the problem (optimization / prediction / evaluation / classification / ODE); map data, constraints, and output targets per sub-question |
+| Stage 0 · Environment check | Verify xelatex / pandoc / Python deps and plotting libraries, and determine the web-research capability tier; auto-install what is missing; output a status report |
+| Stage 1 · Problem analysis | Web research on the problem background and on existing public solutions; classify the problem (optimization / prediction / evaluation / classification / ODE); map data, constraints, and output targets per sub-question |
 | Stage 2 · Workspace setup | Create an `answer/` tree per problem with unified code / figures / paper locations |
-| Stage 3 · Algorithm selection | Generate 2–3 candidates per sub-question and pick by accuracy, complexity, robustness, interpretability, and feasibility; fitness over fancy |
-| Stage 4 · Code implementation | Complete runnable code, vectorized numpy, publication-grade figures via the unified style module |
+| Stage 3 · Algorithm selection | Generate 2–3 candidates per sub-question, supplement them with web research on recent methods and strong papers, and pick by accuracy, complexity, robustness, interpretability, and feasibility; fitness over fancy |
+| Stage 4 · Code implementation | Check mature libraries and high-star open-source implementations first (license vetted); then complete runnable code, vectorized numpy, publication-grade figures via the unified style module |
 | Stage 5 · Paper output | xelatex for PDF, pandoc for Word (OMML formulas); both formats delivered together |
 | Stage 6 · Scoring & refinement | Five-dimension 0–100 self-scoring; below the gate, fix and re-score (see [Scoring System](#scoring-system)) |
 
@@ -162,10 +162,10 @@ Install per problem: `pymoo` (NSGA-II/III), `prophet` (time series), `pywt` (wav
 | Dimension | Points | Criteria |
 | :--- | :--- | :--- |
 | Abstract | 30 | Structural completeness, concrete numbers, progression, consistency with the body |
-| Algorithm / Model correctness | 20 | Sound derivation, complete constraints, reasonable results |
-| Innovation | 20 | Method novelty, cross-disciplinary fusion, custom metrics |
-| Writing | 15 | Logical flow, academic tone, data-backed claims, no vague or AI-style phrasing |
-| Layout | 15 | Formatting, figures & tables, symbol consistency, anonymity compliance (one-strike) |
+| Algorithm / Model correctness | 20 | Sound derivation, complete constraints, reasonable results, traceable parameter basis |
+| Innovation | 20 | Method novelty, cross-disciplinary fusion, custom metrics, grounded in prior-art research |
+| Writing | 15 | Logical flow, academic tone, data-backed claims, no vague or AI-style phrasing, sourced factual claims |
+| Layout | 15 | Formatting, figures & tables, symbol consistency, anonymity compliance (one-strike), compliant reference formatting |
 | **Total** | **100** | **≥ 85 points to finalize** |
 
 Below the gate, deductions are listed and fixed, then re-scored — at most 3 rounds; if still below the gate after 3 rounds, the current version is released and marked "requires manual review". The circuit breaker prevents infinite loops.
