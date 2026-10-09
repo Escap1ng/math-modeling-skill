@@ -2,11 +2,11 @@
 
 # Math Modeling Helper
 
-**数学建模竞赛辅助技能 · V3.0.0**
+**数学建模竞赛辅助技能 · V3.0.1**
 
 Problem analysis · Algorithm selection · Code implementation · Paper polishing — an end-to-end AI modeling skill from problem input to final paper
 
-![Version](https://img.shields.io/badge/version-V3.0.0-2563eb)
+![Version](https://img.shields.io/badge/version-V3.0.1-2563eb)
 ![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?color=16a34a)
 ![Stars](https://img.shields.io/github/stars/Escap1ng/math-modeling-skill?color=f59e0b)
 ![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill?color=0ea5e9)
