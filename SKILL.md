@@ -704,11 +704,11 @@ def read_excel(file_path):
 | 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
 | 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
 
-> **本章图表指引分三层，按需取用**：①「高频图表代码模板」——竞赛高频图型，直接给可跑代码；②「高级图表配色要点」——无内置模板的进阶图型（散点/气泡、雷达、桑基/和弦、地图热力、平行坐标），只给配色规则，图型自己画；③「基础图型绘制规范与代码模板」——折线/柱状/箱线/环形/条形，规则 + 代码都给。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。
+> **本章图表指引分三层，按需取用**：①「高频图表代码模板」——竞赛高频图型，直接给可跑代码；②「高级图表配色要点」——无内置模板的进阶图型（散点/气泡、雷达、桑基/和弦、地图热力、平行坐标），只给配色规则，图型自己画；③「基础图型绘制规范」——折线/柱状/箱线/环形/条形，只给规则，代码按规则现场生成（样式助手见 `plot_style.py`）。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。
 
 > 上表中未内置代码模板的进阶图型：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
 
-> 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范与代码模板见下文「基础图型绘制规范与代码模板」。
+> 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范见下文「基础图型绘制规范」。
 
 #### 图型创新与跨图统一（图库不是边界）
 
@@ -878,13 +878,6 @@ LINE_PALETTE = [COLOR_MAIN, ACCENT_ORANGE, ACCENT_PURPLE, COLOR_BASELINE]
 FILL_ALPHA = 0.15          # 置信带/填充一律淡，不遮数据
 HATCH_SEQUENCE = ('', '---', '|||')   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
 
-# 兼容别名：旧脚本里"红=负面、绿=正向、橙=强调、灰=基准"的角色映射保持不变（值随 Nature 色板更新）；
-# 新代码请直接使用上面的语义常量。
-COLOR_ACCENT  = COLOR_NEGATIVE
-COLOR_SAGE    = COLOR_POSITIVE
-COLOR_MUSTARD = ACCENT_ORANGE
-COLOR_ROCK    = COLOR_BASELINE
-
 # ===== 色图（与身份色同族，保证跨图色彩一致） =====
 DIVERGENT_CMAP = LinearSegmentedColormap.from_list(
     'academic_div', [(0.0, COLOR_MAIN), (0.5, NEUTRAL_BG), (1.0, ACCENT_CORAL)])  # 负蓝→浅灰→珊红
@@ -1042,16 +1035,7 @@ def save_fig(fig, path, vector=False, close=True, dpi=300, tight=True):
 apply_style()   # import 即完成一次性初始化
 ```
 
-各绘图脚本一律走同一入口（取色取字号只从本模块，脚本内不出现 hex 与裸字号）：
-
-```python
-import matplotlib.pyplot as plt
-from plot_style import save_fig, style_axes, identity_color, FIG_FULL, COLOR_BASELINE
-fig, ax = plt.subplots(figsize=FIG_FULL)
-# ... 绘图逻辑：系列取 identity_color(i)，基准/参照取 COLOR_BASELINE ...
-style_axes(ax, grid='y')       # 坐标框架统一，禁逐脚本手写 spine/网格/刻度设置
-save_fig(fig, '../figures/final/figN_line_perf.png', vector=True)
-```
+各绘图脚本一律走同一入口：取色取字号只从本模块，脚本内不出现 hex 与裸字号；骨架见「现绘最小骨架」。
 
 #### 高频图表代码模板
 
@@ -1264,7 +1248,7 @@ save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 - **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层用 `SEQUENTIAL_CMAP` 单色顺序系；**禁红绿配色**（色盲不友好）
 - **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3–0.5；按类别取 `identity_color(i)`；图例置于图外防重叠
 
-#### 基础图型绘制规范与代码模板（折线/柱状/箱线/环形/条形）
+#### 基础图型绘制规范（折线/柱状/箱线/环形/条形）
 
 > 高频基础图型的逐项规范，与上方 Nature 配色及 `plot_style.py` 统一样式模块配套：取色只用语义常量，坐标框架一律 `style_axes()`，数值标注一律 `annotate_bars()`；强调黑白打印/色盲场景的明暗区分（纹理仅多组年份等场景可选）。热力图灰度打印变体见本节末注意事项。
 
@@ -1273,166 +1257,36 @@ save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 - X/Y 轴**完整标注物理含义 + 单位**（如：检测文件数量、耗时（ms））
 - 网格由 `style_axes(ax, grid='y')` 统一给出：只保留数值轴方向浅灰细虚线，纵向网格删除
 - 性能对比类**坐标轴起点从 0 开始**（避免视觉误导）
-- **主次层级**：主线（本文方法）`COLOR_MAIN` 2.2pt 实线 + 白心标记；对比方法取 `identity_color(i)` 1.5pt；**基准/参照一律 `COLOR_BASELINE` 虚线**；置信带用线条同色 + `FILL_ALPHA`
-- 同图曲线 ≤5 条，超过分图；**优先线尾直接标注取代图例**；禁用粗艳丽线条与大面积填充渐变
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from plot_style import COLOR_BASELINE, FIG_FULL, FS_ANNOT, identity_color, save_fig, style_axes
-
-fig, ax = plt.subplots(figsize=FIG_FULL)
-x = np.array([100, 200, 500, 1000, 2000])                    # 检测文件数量
-line_styles = [('-', 'o', 2.2), ('--', 's', 1.5), ('-.', '^', 1.5), (':', 'D', 1.5)]
-for i, ((name, y), (ls, mk, lw)) in enumerate(zip(series.items(), line_styles)):
-    is_baseline = name.startswith('基准')                     # 参照对象走灰，不占身份色
-    color = COLOR_BASELINE if is_baseline else identity_color(i)
-    ax.plot(x, y, color=color, linestyle=ls, marker=mk, linewidth=lw,
-            markerfacecolor='white', label=name)              # 线型+标记+颜色三重冗余
-    ax.text(x[-1], y[-1], f' {name}', color=color, fontsize=FS_ANNOT, va='center')  # 线尾直标
-ax.set_xlabel('检测文件数量（个）')
-ax.set_ylabel('耗时（ms）')
-ax.set_xlim(0, x.max() * 1.3)      # 从 0 起始（性能对比强制）+ 右侧留直接标注位
-ax.set_ylim(0, None)
-style_axes(ax, grid='y')
-save_fig(fig, '../figures/final/figN_line_scale.png', vector=True)
-```
+- **主次层级**：主线（本文方法）`COLOR_MAIN` 2.2pt 实线 + 白心标记；对比方法取 `identity_color(i)` 1.5pt；**基准/参照一律 `COLOR_BASELINE` 虚线**（按系列名前缀「基准」识别）；置信带用线条同色 + `FILL_ALPHA`
+- 同图曲线 ≤5 条，超过分图；**优先线尾直接标注取代图例**，横轴留出约 1.3 倍量程作标注位；线型/标记/颜色三重冗余（实线圆点、虚线方块、点划线三角、点线菱形）；禁用粗艳丽线条与大面积填充渐变
 
 **分组柱状图（多方案指标对比）**
 
 - **柱宽统一**，组内柱间距 < 组间间距；**Y 轴必须从 0 起始**
 - **单色扁平填充**，无渐变、无立体浮雕；**指标（系列）取身份色 `identity_color(i)`，方案（同族层级）取 `TONE_RAMP` 明度**；基础图表不默认加斜线/圆点纹理（多组年份等确需区分时用透明度或 `HATCH_SEQUENCE`）
-- 柱端数值一律走 `annotate_bars()`（`FS_ANNOT` 小字 + `NEUTRAL_DARK`），不手写 `ax.text`
+- 柱端数值一律走 `annotate_bars()`（`FS_ANNOT` 小字 + `NEUTRAL_DARK`），不手写 `ax.text`；Y 轴上限留约 12% 给柱端标注
 - 对照组相对本文方案的均值增益用 `delta_annotation()` 输出 `↑/↓` + 方向色；误差棒用 `COLOR_INK` + capsize
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from plot_style import (FIG_FULL, FS_ANNOT, annotate_bars, delta_annotation,
-                        identity_color, save_fig, style_axes)
-
-fig, ax = plt.subplots(figsize=FIG_FULL)
-groups = ['方案A', '方案B', '方案C']
-metrics = ['准确率', '召回率', 'F1']
-data = np.array([[0.92, 0.88, 0.90], [0.85, 0.83, 0.84], [0.88, 0.90, 0.89]])
-n_g, n_m = data.shape
-bar_w = 0.7 / n_m                      # 柱宽统一；组内柱心距=柱宽 < 组间距 0.3
-for i in range(n_m):
-    centers = np.arange(n_g) + (i - (n_m - 1) / 2) * bar_w
-    bars = ax.bar(centers, data[:, i], width=bar_w,
-                  color=identity_color(i),                         # 指标（系列）取身份色
-                  edgecolor='white', linewidth=0.8, label=metrics[i])
-    annotate_bars(ax, bars, fmt='{:.2f}')                          # 柱端数值统一标注
-gain, gcolor = delta_annotation(data[1].mean(), data[0].mean(), digits=1)   # 方案A vs 方案B
-ax.text(0.98, 0.96, f'方案A 均值增益 {gain}', transform=ax.transAxes,
-        ha='right', va='top', fontsize=FS_ANNOT, color=gcolor)             # 方向色 + ↑/↓
-ax.set_xticks(np.arange(n_g)); ax.set_xticklabels(groups)
-ax.set_ylim(0, data.max() * 1.12)                              # Y 轴必须从 0 起始
-ax.set_ylabel('指标值')
-style_axes(ax, grid='y')
-ax.legend(frameon=False, ncols=len(metrics), loc='upper center',
-          bbox_to_anchor=(0.5, -0.08))                         # 图例移到轴下方，不压数据
-save_fig(fig, '../figures/final/figN_bar_metric.png', vector=True)
-```
+- 柱体统一白色描边 0.8pt（Nature 分隔口径）；图例置于轴下方（`bbox_to_anchor=(0.5, -0.08)`，水平排布），不压数据
 
 **箱线图（误差/耗时分布、稳定性实验）**
 
 - **白底箱体 + 身份色边框 + 同色 2.2pt 粗中位线**（Nature 口径：箱体不填充主色，避免大面积色块压过中位数）
 - 均值用**白心菱形**；个体观测以同色半透明**抖动点全量呈现**（显示每一次观测，不只画摘要）
 - 离群点统一**单一基准灰小实心圆**，不额外赋色；须与端帽取 `COLOR_INK`
-- 每组箱体尺寸完全一致、均匀排布；网格走 `style_axes(ax, grid='y')`
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from plot_style import (COLOR_BASELINE, COLOR_INK, FIG_FULL, identity_color, save_fig,
-                        style_axes)
-
-fig, ax = plt.subplots(figsize=FIG_FULL)
-rng = np.random.default_rng(0)
-data = [rng.normal(20, 3, 50), rng.normal(35, 5, 50), rng.normal(50, 8, 50)]
-for i, d in enumerate(data):                                  # 个体观测：同色抖动点全量
-    ax.scatter(np.full_like(d, i + 1) + rng.uniform(-0.12, 0.12, len(d)), d,
-               s=9, color=identity_color(i), alpha=0.35, edgecolors='none', zorder=2)
-bp = ax.boxplot(data, patch_artist=True, widths=0.45, zorder=3,      # 箱体尺寸一致、均匀排布
-    boxprops=dict(facecolor='white', linewidth=1.2),                 # 白底箱体（边框逐箱同色）
-    medianprops=dict(linewidth=2.2),                                 # 中位线加粗（同上取身份色）
-    whiskerprops=dict(color=COLOR_INK, linewidth=1.0),
-    capprops=dict(color=COLOR_INK, linewidth=1.0),
-    flierprops=dict(marker='o', markersize=4, markerfacecolor=COLOR_BASELINE,
-                    markeredgecolor='none', alpha=0.8))              # 离群点单一基准灰
-for i, (box, med) in enumerate(zip(bp['boxes'], bp['medians'])):
-    box.set_edgecolor(identity_color(i))                             # 边框与中位线同组同色
-    med.set_color(identity_color(i))
-for i, d in enumerate(data):                                         # 均值：白心菱形
-    ax.scatter(i + 1, np.mean(d), marker='D', s=34, facecolor='white',
-               edgecolor=identity_color(i), linewidths=1.2, zorder=5)
-ax.set_xticks(range(1, len(data) + 1)); ax.set_xticklabels(['模型1', '模型2', '模型3'])
-ax.set_ylabel('耗时（ms）')
-ax.set_ylim(0, None)
-style_axes(ax, grid='y')
-save_fig(fig, '../figures/final/figN_box_err.png', vector=True)
-```
+- 每组箱体尺寸完全一致（宽 0.45）、均匀排布，抖动幅度 ≤ 组距 12%、α0.35；网格走 `style_axes(ax, grid='y')`
 
 **环形图（模块占比，替代饼图；竞赛论文尽量少用）**
 
 - 类别 **≤5 类**，分类过多改用柱状/条形；性能与指标对比优先柱状/折线
 - 占比由 **`TONE_RAMP` 同族明度**编码（最大块最深，逐级变浅），分隔线统一**白色 1.2pt**，扁平无立体
 - **取消图例**：类别与百分比用引线直接标注在环外；中心留白写总量
-- 学术建议：优先柱状/折线，环形图只用于模块占比、资源分配这类构成关系
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from plot_style import COLOR_INK, FIG_SQUARE, FS_ANNOT, FS_TITLE, TONE_RAMP, save_fig
-
-fig, ax = plt.subplots(figsize=FIG_SQUARE)
-labels = ['特征提取', '模型推理', '数据加载', '其他']       # ≤5 类
-sizes = [52, 30, 12, 6]                              # 实际量（秒），占比由 total 换算
-total = sum(sizes)
-ranks = np.empty(len(sizes), dtype=int)
-ranks[np.argsort(sizes)[::-1]] = np.arange(len(sizes))      # 0 = 最大块 → 明度最深
-wedges, _ = ax.pie(sizes, startangle=90, counterclock=False,
-    colors=[TONE_RAMP[min(r, len(TONE_RAMP) - 1)] for r in ranks],
-    wedgeprops=dict(width=0.38, edgecolor='white', linewidth=1.2))   # width<1 → 真环形（中空），白色分隔无立体
-for w, label, value in zip(wedges, labels, sizes):          # 引线直标取代图例
-    ang = np.deg2rad((w.theta1 + w.theta2) / 2)
-    ax.annotate(f'{label}\n{value / total * 100:.1f}%', xy=(np.cos(ang) * 0.99, np.sin(ang) * 0.99),
-                xytext=(np.cos(ang) * 1.26, np.sin(ang) * 1.26), ha='center', va='center',
-                fontsize=FS_ANNOT, color=COLOR_INK,
-                arrowprops=dict(arrowstyle='-', color=COLOR_INK, linewidth=0.6))
-ax.text(0, 0, f'合计\n{total:.0f} s', ha='center', va='center',
-        fontsize=FS_TITLE, fontweight='bold', color=COLOR_INK)   # 环心写总量
-save_fig(fig, '../figures/final/figN_ring_share.png', vector=True)
-```
+- 起始角 90°、顺时针，`width=0.38` 出真环形；引线标注落在 1.26 倍半径处；学术建议：优先柱状/折线，环形图只用于模块占比、资源分配这类构成关系
 
 **条形图（类别名称较长或排名对比）**
 
 - 长类别名一律用横向条形；**按数值降序排列**，第一名主角蓝、其后逐级走 `TONE_RAMP` 明度（明度即排名）
-- 数值轴从 0 起始；条端数值用 `annotate_bars(ax, bars, orient='h')`，不手写 `ax.text`
+- 数值轴从 0 起始、上限留约 12%；条高 0.6；条端数值用 `annotate_bars(ax, bars, orient='h')`，不手写 `ax.text`
 - 类别标签左对齐（横向天然满足）、条形统一高度；网格走 `style_axes(ax, grid='x')`
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from plot_style import FIG_FULL, TONE_RAMP, annotate_bars, save_fig, style_axes
-
-fig, ax = plt.subplots(figsize=FIG_FULL)
-cats = ['YOLOv8 检测模型', 'Faster R-CNN 检测模型', 'SSD 检测模型', 'CenterNet 检测模型']
-vals = [0.923, 0.874, 0.831, 0.796]
-order = np.argsort(vals)[::-1]                              # 降序：第一名置于顶部且颜色最深
-cats = [cats[i] for i in order]; vals = [vals[i] for i in order]
-bars = ax.barh(np.arange(len(cats)), vals, height=0.6,
-               color=[TONE_RAMP[min(r, len(TONE_RAMP) - 1)] for r in range(len(vals))],
-               edgecolor='white', linewidth=0.8)
-ax.set_yticks(np.arange(len(cats))); ax.set_yticklabels(cats)
-ax.invert_yaxis()
-annotate_bars(ax, bars, fmt='{:.3f}', orient='h')            # 条端数值统一标注
-ax.set_xlim(0, max(vals) * 1.12)                              # 数值轴从 0 起始
-ax.set_xlabel('mAP@0.5')
-style_axes(ax, grid='x')
-save_fig(fig, '../figures/final/figN_hbar_map.png', vector=True)
-```
 
 **热力图灰度打印变体**：需黑白打印的场景（如附录矩阵图），把模板2 的发散色图 `DIVERGENT_CMAP` 换成 `SEQUENTIAL_CMAP`（浅→主角蓝单色顺序系），格线仍保持白色 `linewidths=0.6, linecolor='white'`，并在 `cbar_kws` 里标注数值区间；层级差异改由明度承担，灰度打印仍可读。
 
@@ -1898,8 +1752,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 \midrule
 1 & 假设数据在采集过程中无系统性偏差 & 依据题目说明，数据经标准化预处理 \\
 2 & 假设各周期决策相互独立，无跨周期资源传递 & 题目未声明资源可累积，故按独立处理 \\
-3 & 假设模型参数在求解周期内保持恒定 & 短时间尺度内参数漂移可忽略\cite{ref1} \\
-4 & 假设随机扰动服从均值为零的正态分布 & 依据中心极限定理，多源扰动叠加趋近正态 \\
+% 其余假设按同格式续写，共 4–6 条
 \bottomrule
 \end{tabularx}
 \end{table}
