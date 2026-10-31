@@ -2,11 +2,11 @@
 
 # 数学建模竞赛辅助技能
 
-**Math Modeling Helper · V3.0.1**
+**Math Modeling Helper · V3.1.0**
 
 赛题分析 · 算法优选 · 代码实现 · 论文润色 —— 从赛题输入到论文定稿的一站式 AI 建模技能
 
-![Version](https://img.shields.io/badge/版本-V3.0.1-2563eb)
+![Version](https://img.shields.io/badge/版本-V3.1.0-2563eb)
 ![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?label=许可证&color=16a34a)
 ![Stars](https://img.shields.io/github/stars/Escap1ng/math-modeling-skill?label=Stars&color=f59e0b)
 ![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill?label=最近提交&color=0ea5e9)
