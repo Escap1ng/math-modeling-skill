@@ -40,6 +40,7 @@ An end-to-end AI skill for mathematical modeling contests: **problem understandi
 | Curated algorithm library | High-frequency and frontier methods at a glance — see [Algorithm Library](#algorithm-library) |
 | Publication-grade figures | Nature three-role palette and a unified style module — see [Visualization Standards](#visualization-standards) |
 | Award-level formatting | Award-paper layout with anonymity compliance — see [Paper & Formatting Standards](#paper--formatting-standards) |
+| Traceable research | Web research across background, methods, open-source code, and references, with a search log and a citation verification ledger |
 | Quality loop | Five-dimension 0–100 self-scoring with a circuit breaker — see [Scoring System](#scoring-system) |
 
 ---
@@ -55,11 +56,11 @@ Copy the root `SKILL.md` into your agent's skills directory (the exact path vari
 Once the skill is installed in your AI IDE, finish a modeling task in three steps:
 
 ```
-1️⃣ Upload the problem files (PDF / Excel / text) or paste the problem content
+1. Upload the problem files (PDF / Excel / text) or paste the problem content
  ↓
-2️⃣ The skill runs the seven-stage workflow automatically (see Workflow below)
+2. The skill runs the seven-stage workflow automatically (see Workflow below)
  ↓
-3️⃣ Get the complete project tree: code/ + figures/ + paper/ (structure below)
+3. Get the complete project tree: code/ + figures/ + paper/ (structure below)
 ```
 
 ---
@@ -112,7 +113,9 @@ Check which packages are missing (silent when all are present):
 python -c "import importlib.util as u; [print('MISSING:', m) for m in ['numpy','pandas','scipy','matplotlib','seaborn','openpyxl','xlrd','docx','fitz'] if u.find_spec(m) is None]"
 ```
 
-Install per problem: `pymoo` (NSGA-II/III), `prophet` (time series), `pywt` (wavelets).
+Install per problem: `lightgbm` (gradient boosting), `python-ortools` (combinatorial optimization / assignment), `pymoo` (NSGA-II/III), `prophet` (time series), `pywt` (wavelets), `shap` (model explanation), `geopandas` / `folium` (geospatial & maps), `adjustText` (label placement).
+
+Stage 0 also probes web-research capability (keyword search and full-text retrieval of a given URL) and records the result in the environment report as available / partially available / unavailable; when unavailable, the fallback rules apply and no reference may be filled in from memory.
 
 ---
 
@@ -142,7 +145,7 @@ Install per problem: `pymoo` (NSGA-II/III), `prophet` (time series), `pywt` (wav
 - **Structure** — title, abstract (800–1000 words with concrete numbers and error analysis), and keywords on one page; assumptions in a three-line table (4–6 items with justification); no vertical rules in any table
 - **Formulas** — core formulas (objectives / key constraints / state equations) numbered and referenced; derivations kept concise; metric formulas (R²/MAE/RMSE/MAPE) defined exactly once
 - **Body writing** — problem-response structure with an explicit conclusion paragraph per sub-question; mandatory transitions between sub-questions; de-AI self-check (no template openers, empty uplift, or transition-word stuffing)
-- **References** — GB/T 7714 format, 5–8 entries, at least 2 from the last 5 years and 1 in English, each verified online
+- **References** — GB/T 7714 format, 5–8 entries, at least 2 from the last 5 years and 1 in English; every entry must be verified field by field against external sources before it enters the paper — unverifiable entries are dropped, and the verification ledger ships with the delivery
 
 ---
 
@@ -190,7 +193,7 @@ Problem_X_short_name/
 
 | File | Description |
 | :--- | :--- |
-| `SKILL.md` | Skill core: seven-stage workflow, algorithm library, code templates, visualization & layout standards, body writing standards, 0–100 scoring system |
+| `SKILL.md` | Skill core: seven-stage workflow, algorithm library, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
 | `README.md` | Chinese documentation |
 | `README.en.md` | English documentation (this file) |
 | `LICENSE` | MIT License |
