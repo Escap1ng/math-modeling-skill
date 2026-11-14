@@ -28,6 +28,8 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 4. 用户提交论文草稿要求润色
 5. 用户要求先联网查证赛题背景再进行分析与建模
 
+**判级**：触发后先按下方「工作流分级」判定服务级别（A 完整建模 / B 单项服务），再进入对应阶段子集。
+
 **输出风格**：
 
 - 默认使用中文输出
@@ -37,7 +39,40 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 
 ***
 
-## 工作流（强制执行）
+## 工作流分级（先判级，再执行）
+
+**接到请求后的第一步是判级**：完整建模与单项服务执行不同的阶段子集。禁止把轻量请求强行拉入全流程，也禁止把完整建模需求降级为片段式回答。
+
+| 级别 | 触发特征 | 执行范围 |
+| :--- | :--- | :--- |
+| **A · 完整建模**（默认） | 上传/粘贴赛题、"分析这道题""帮我建模"、要求从赛题到论文交付（对应触发场景 1、2、5） | 阶段零 → 阶段六全流程 |
+| **B · 单项服务** | 明确只要其中一环：算法推荐/咨询、指定小问的代码实现、论文草稿润色（对应触发场景 3、4） | 仅执行下方子集表对应阶段 |
+
+**判级规则**：
+
+- 请求同时含赛题与明确局部诉求（如"先只给问题一的算法思路"）→ 按 B 执行该局部；完成后可询问是否升级为 A，不得未经确认自行扩展为全流程
+- 意图不明时默认 A；但用户明说"只要/先只/不用写论文"等限定词时一律按 B
+- B 级执行中用户追加完整交付要求 → 升级为 A，已完成阶段不重复执行，从缺失阶段接续
+
+**B 级各服务的阶段子集**：
+
+| 服务 | 执行阶段 | 规范沿用 | 不执行 |
+| :--- | :--- | :--- | :--- |
+| 算法推荐/咨询 | 阶段零仅探测联网能力（第 6 项）→ 阶段一精简版（问题本质/已知条件/输出目标）→ 阶段三（候选生成 → 联网补前沿 → 比对择优） | 「拟合性优先于高级性」判据；检索纪律见第6章 | 阶段二/四/五/六；不建目录、不出代码与论文 |
+| 指定小问代码实现 | 阶段零（仅检该问所需库）→ 阶段一精简版（仅该问）→ 阶段二（仅建 code/ 与 figures/）→ 阶段三（仅该问）→ 阶段四（仅该问） | 第2章代码规范、第4章可视化规范 | 阶段五/六；不出论文、不评分 |
+| 论文草稿润色 | 通读草稿 → 按第3章写作规范修改 → 对照第7章自检清单核查改动处 → 交付修订稿（保持原格式） | 正文语言表述规范与去 AI 化要求；改动逐条说明 | 阶段零~四；不重做建模；未经要求不重新生成 PDF/Word |
+
+**B 级共同纪律**：
+
+- 算法咨询时，阶段三的比对结论即交付物，**须输出给用户**（阶段三"不输出给用户"的默认仅适用 A 级，见阶段三标题说明）
+- 涉及联网查证的（前沿方法、文献），仍按阶段零第 6 项判定能力、按第6章纪律执行；不可用时同样走降级分支，不得凭记忆补文献
+- 输出中注明本次为单项服务及覆盖范围，避免被误认为完整交付
+- 润色不得改动草稿的模型结论与数值；发现数值/逻辑疑点只标注提示，不擅自改写
+- 阶段七仅适用 A 级；B 级交付不打包，但匿名（§5.0）与种子可复现要求仍须满足
+
+***
+
+## 工作流（A 级完整建模，强制执行）
 
 ### 阶段零：环境预检（前置检查）
 
@@ -60,7 +95,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
    - 若缺失，提示安装 pandoc（`winget install pandoc` 或官网下载），并提醒其为系统级安装、非 pip 可装
    - 可选：`graphviz`（复杂架构图，见第4章"流程图专项规范"）
 5. **算法专用库（阶段零不预装，延迟到阶段三补检）**：
-   - `pulp`、`cvxpy`、`scikit-learn`、`xgboost`、`networkx`、`statsmodels`、`pymoo`、`prophet`、`pywt`、`lightgbm`、`python-ortools`、`shap`、`geopandas`、`folium`、`adjustText` 按题目需要才装，阶段零一律不预装
+   - `pulp`、`cvxpy`、`scikit-learn`、`xgboost`、`networkx`、`statsmodels`、`pymoo`、`prophet`、`PyWavelets`、`lightgbm`、`ortools`、`timesfm[torch]`（时序基础模型，Python≥3.10）、`shap`、`geopandas`、`folium`、`adjustText`、`optuna`、`catboost`、`lmfit`、`lifelines`、`filterpy`、`EMD-signal`、`simpy`、`mesa`、`esda`、`pykrige`、`jieba`、`gplearn`、`dowhy`、`econml`、`torch`、`deepxde`、`stable-baselines3`+`gymnasium`、`torch-geometric`、`pysr`（需 Julia）按题目需要才装，阶段零一律不预装
    - 阶段三选定算法后，对照「算法实现速查」表逐库检查可用性；缺失即装，安装失败则退化为该表给出的等价替代方法
 6. **联网检索能力（阶段一背景调研与第6章引用查证的前置依赖）**：
    - 检查当前运行环境是否具备联网检索/抓取能力：内置网页搜索或网页读取工具、浏览器类工具（导航 + 取正文），或可用的 HTTP 客户端。**不要假定工具名**，以本环境实际暴露的为准
@@ -91,16 +126,17 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 ```bash
 第X题_赛题简称/
 └── answer/         # 所有建模产出统一存放于 answer 文件夹下
-    ├── code/           # Python代码（按问题编号：q1_*.py, q2_*.py；含 plot_style.py 统一样式模块）
+    ├── requirements.txt  # 依赖版本清单（阶段四「可复现性」生成，随阶段七打包交付）
+    ├── code/           # Python代码（按问题编号：q1_*.py, q2_*.py；含 plot_style.py 统一样式模块 + plot_templates.py 简单图型函数）
     ├── figures/
     │   ├── final/      # 交付图（语义命名：fig{图号}_{题型}_{内容}.png/pdf；图号未定前一律以 figN_ 占位、插入论文时替换，分辨率按第4章分级 DPI 策略，须被论文 .tex 引用）
     │   └── tmp/        # 调试图（与正式版同品质、同分辨率；交付/打包前整体删除）
     └── paper/          # 论文（paper.tex + paper.pdf + paper.docx）
 ```
 
-### 阶段三：算法选择（内部推理，不输出）
+### 阶段三：算法选择（A 级内部推理，不输出）
 
-**不输出给用户**，仅在内部完成并择优：
+**A 级不输出给用户**，仅在内部完成并择优；B 级算法咨询时本阶段结论即交付物，须输出（见「工作流分级」）：
 
 1. **候选算法生成**：针对每个小问，结合问题类型、数据规模、约束条件，从第1章算法库中筛选 2–3 种可行算法；问题特征 → 推荐算法的映射见「算法选择速查」。
 2. **联网补前沿**（见第6章"检索用途与触发时机"）：检索本题类型的近年新方法、交叉学科方法与综述，以及同方法或同应用域的高水平论文；把过得了下方「拟合性优先于高级性」判据的方法并入候选，检索式、命中与采纳理由记入检索记录。第1章算法库是静态的，创新性主要靠这一步补。
@@ -112,6 +148,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 **要求**：
 
 - **算法选型核心原则：拟合性优先于高级性**——首选与问题结构、数据规模、约束条件最匹配的算法（保证可求解、结果可靠、可解释），再在匹配基础上考虑创新性；禁止为炫技强行引入与问题不适配的高深算法，导致求解困难或结论不可信
+- **选型必过误用红线**：候选与最终方案均须逐条对照第1章「算法误用红线」自查，命中即换方案或补做校验
 - 至少 1 个候选算法具有明显创新性（可引入交叉学科方法）
 - 最终方案的数学描述使用学术语态，公式独立呈现
 - 形成逻辑闭环，控制字数
@@ -123,7 +160,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 - 基础数值与可视化：numpy, scipy, pandas, matplotlib, seaborn
 - 优化建模：pulp, cvxpy, scipy.optimize
 - 机器学习：scikit-learn, xgboost
-- 数据读取：PyMuPDF（PDF）、openpyxl（.xlsx）、pandas
+- 数据读取：PyMuPDF（PDF）、openpyxl（.xlsx/.xlsm）、xlrd（.xls）、pandas（CSV/TSV/TXT）
 
 **动手前先查现成实现**（见第6章"检索用途与触发时机"）：按「算法实现速查」确认目标算法有无成熟库可直接调用；库覆盖不到的部分再检索高 star GitHub 项目，把仓库名、star 数、许可证与复用判断记入检索记录。许可证缺失或不允许该用途的一律不复用；附录中改写自开源项目的代码须注明来源与许可证。
 
@@ -133,6 +170,9 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 - 使用 numpy 向量化操作
 - 关键参数通过注释说明
 - 输出清晰的结果摘要
+- **可复现性（强制）**：含随机性的脚本一律 `from plot_style import SEED`，使用 `np.random.default_rng(SEED)`（用 random 模块时另加 `random.seed(SEED)`）；种子只在 plot_style.py 定义一处，各脚本不得另写数值；种子值记入支撑材料 README.txt
+- **调参与算力预算**：超参搜索先定试验上限与早停规则，高成本方法先过小规模可行性验证（见「调参与算力预算」）
+- **依赖清单**：交付前按实际用到的库生成 `answer/requirements.txt`（锁定版本号），覆盖代码全部第三方 import，随阶段七打包交付
 - 可视化保存至 `figures/final/`，学术风格，分辨率按第4章分级 DPI 策略，样式与配色遵循第4章可视化规范，建议使用统一样式模块 `code/plot_style.py`（见第4章）
 
 ### 阶段五：论文输出
@@ -178,13 +218,74 @@ pandoc paper.tex -o paper.docx
 1. 逐项打分并记录扣分理由
 2. 汇总总分，判定是否达标
 3. 若 $S < 85$：列出具体扣分项 -> 针对性修改 -> 重新评分
-4. 若 $S \geq 85$：输出最终论文，附评分表
+4. 若 $S \geq 85$：进入阶段七打包与匿名终检，通过后输出最终交付物，附评分表
 
 **熔断机制**（防止无限循环）：
 
 - 最大优化轮次：**3 轮**
-- 若 3 轮后仍未达标（$S < 85$）：输出当前版本论文，附评分表与剩余扣分项说明，明确标注"未达 85 分标准，需人工复核"
+- 若 3 轮后仍未达标（$S < 85$）：经阶段七终检后输出当前版本论文，附评分表与剩余扣分项说明，明确标注"未达 85 分标准，需人工复核"
 - 每轮优化必须有明确改进动作，禁止无实质性修改的空转
+
+### 阶段七：打包与匿名终检（强制执行）
+
+阶段六达标（或熔断放行）后、交付前执行终检与打包，**全部通过方可交付**。本阶段仅适用 A 级；B 级交付不打包，但匿名与种子可复现要求仍须满足（见「工作流分级」共同纪律）。
+
+**1. 匿名终检（一票否决，判据同 §5.0）**：
+
+- 扫描 paper.tex / paper.docx / paper.pdf 全文：参赛者姓名、学校、赛区、队号、指导教师（含拼音与英文变体）
+- 扫描全部文件名（代码、图片、支撑材料、zip 包名）与代码注释中的身份信息
+- 逐张目视检查 figures/final/ 图片：不得含学校水印、名称、校徽
+- 检查文档元数据：PDF 作者/制作者字段、Word 文档属性不得含身份信息；页眉留空、页脚仅页码
+- 任一项命中：按 §5.0 修复后复检该项
+
+**2. 交付完整性与可复现性**：
+
+- paper.pdf 与 paper.docx 均存在且可正常打开、内容一致（判据同第7章"输出文件完整性"）
+- `answer/requirements.txt` 存在，覆盖代码实际 import 的全部第三方库并锁定版本号
+- figures/final/ 与 paper.tex 引用双向核对（下方自动核对代码）：无"已生成未被引用"的图，无"被引用但缺文件"的图
+- figures/tmp/ 已整体删除；answer/ 下无调试残留
+- 环境状态报告、检索记录、查证台账齐备（判据同阶段零与第6章）
+- **可复现性抽查**：至少抽 1 问代码在干净目录重跑（同种子），关键数值与论文一致；不一致须排查随机性未固定/数据路径/依赖版本漂移并修复
+
+```python
+# 自动核对：figures/final 与 paper.tex 引用双向匹配（在 answer/ 下运行）
+# 按去扩展名文件名比对：兼容无扩展名引用与 png/pdf 双格式同名图
+import os
+import re
+
+def check_figure_refs(answer_dir='.'):
+    with open(os.path.join(answer_dir, 'paper/paper.tex'), encoding='utf-8') as f:
+        tex = f.read()
+    refs = re.findall(r'\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}', tex)
+    ref_stems = {os.path.splitext(os.path.basename(p))[0] for p in refs}
+    final_dir = os.path.join(answer_dir, 'figures/final')
+    file_stems = {os.path.splitext(f)[0] for f in os.listdir(final_dir)
+                  if f.lower().endswith(('.png', '.pdf', '.jpg', '.jpeg'))}
+    unused = file_stems - ref_stems    # 已生成但未插入论文的图：补插或删除
+    broken = ref_stems - file_stems    # 论文引用但缺图文件：补生成或改路径
+    return unused, broken
+
+unused, broken = check_figure_refs()
+if unused or broken:
+    raise SystemExit(f'图片引用核对未通过：未引用={sorted(unused)}，缺失={sorted(broken)}')
+```
+
+**3. 支撑材料打包（zip 结构）**：
+
+```
+第X题_赛题简称_支撑材料.zip
+├── paper/            # paper.pdf + paper.docx + paper.tex
+├── code/             # 全部可运行代码（含 plot_style.py；注释已匿名化）
+├── figures/final/    # 交付图（仅论文引用到的）
+├── requirements.txt  # 依赖版本（pip install -r requirements.txt 还原环境）
+└── README.txt        # 运行说明：Python 版本、安装命令、执行顺序 q1→qN、随机种子说明
+```
+
+- zip 包名与内部任何路径不得含身份信息
+- 附录A 支撑材料清单与 zip 实际内容逐项一致；不一致时修正清单或包内容
+- 提交形式以所报赛事官方通知为准（如国赛要求论文与支撑材料分开提交）；上述结构为支撑材料的默认组织方式
+
+**4. 交付说明**：附评分表与环境状态报告（含联网档位）；熔断放行时另附剩余扣分项说明。
 
 ***
 
@@ -238,7 +339,8 @@ pandoc paper.tex -o paper.docx
 
 **监督学习**：XGBoost、SVM、随机森林、LightGBM、CatBoost、KNN
 **深度学习**：Transformer、CNN、RNN/LSTM、自编码器（AE/VAE）、注意力机制（PINN、GNN见前沿创新方法）
-**强化学习**：DQN、PPO、SAC、TD3
+**强化学习**：DQN、PPO、SAC、TD3（序贯决策/动态调度类；须自定义环境接口，算力门槛见阶段四「调参与算力预算」）
+**超参搜索**：网格/随机搜索、TPE 与贝叶斯优化、早停剪枝（搜索预算与退化纪律见阶段四「调参与算力预算」）
 
 #### 统计与数据分析
 
@@ -247,11 +349,18 @@ pandoc paper.tex -o paper.docx
 **降维聚类**：PCA、t-SNE、K-means/DBSCAN、UMAP、层次聚类、高斯混合模型（GMM）
 **时间序列**：ARIMA、LSTM/GRU、Prophet、指数平滑（Holt-Winters）、VAR
 **小样本预测（国赛高频）**：灰色预测GM(1,1)（少数据、贫信息场景首选，可作基线对比）、马尔可夫链预测（状态转移类问题）、组合预测（多模型加权/最优组合）
+**时序基础模型（前沿）**：TimesFM 3.0（Google，2026-08，330M 参数，原生多变量 + 仅过去/已知未来协变量 + 9 分位数零样本预测；官方 fev-bench/TIME/GIFT-Eval 排名第一为厂商自报，须与本题基线实测对比；权重为非商业许可，竞赛学术用途可用，转商用须换 2.5 权重或走 Google Cloud；安装/接口/选型纪律见阶段四「时序基础模型 TimesFM 3」）；同类备选 Chronos-2、Moirai 2.0（选型前按第6章核对其权重许可与能力边界）
 **分类与判别**：判别分析（Fisher判别）、逻辑回归、朴素贝叶斯
 **数据挖掘**：关联规则挖掘（Apriori）
 **统计推断**：极大似然估计（MLE）、EM算法（含隐变量模型）、贝叶斯估计/贝叶斯更新
 **回归补充**：多项式回归、逐步回归
 **分类补充**：决策树（ID3/C4.5/CART，可作集成基学习器）
+**异常检测**：3σ / IQR 箱线判据（单变量首选）、孤立森林（IsolationForest）、LOF 局部离群因子、DBSCAN 噪声点；数据预处理必做，异常识别类赛题可作主模型
+**不确定性量化**：Bootstrap 置信区间（BCa）、分位数回归与区间预测（须报经验覆盖率）、蒙特卡洛误差传播、区间校准
+**参数反演与拟合**：非线性最小二乘（LM / 信赖域）、带界约束拟合与参数置信区间、可辨识性分析（参数能否唯一确定）
+**生存分析**：Kaplan–Meier 生存曲线、Cox 比例风险模型（含删失数据场景）
+**文本挖掘**：中文分词 + TF-IDF、LDA 主题模型、文本分类与情感词典（词典须核来源与许可）
+**空间统计**：Moran's I / LISA 空间自相关、克里金插值、空间权重矩阵与空间回归
 
 #### 综合评价与多属性决策（评价/排序类问题首选）
 
@@ -275,57 +384,36 @@ pandoc paper.tex -o paper.docx
 **多目标优化**：NSGA-II/III、鲁棒优化、贝叶斯优化、MOEA/D
 **图与网络**：GNN、复杂网络分析、图注意力网络（GAT）、社区发现（Louvain）
 
+#### 算法误用红线（选型即校验，命中即换方案）
+
+> 阶段三择优时逐条自查，命中任一条即换方案或补做校验；第7章自检与第8章扣分均指回本节。
+
+1. **小样本不上深度学习/强化学习**：样本量撑不起模型容量时改用统计模型、树模型或 GM(1,1)，并在正文给出样本量与参数量的对比依据
+2. **t-SNE / UMAP 只用于可视化**：其坐标不保距、不保密度，**禁止**在其结果上做聚类、回归或距离度量；聚类须在原空间或 PCA 空间进行
+3. **时序禁止随机切分**：一律按时间先后留出或滚动交叉验证；标准化器、特征选择、缺失填补只能在训练段拟合，防信息泄漏
+4. **AHP 必须报一致性检验**（CR<0.1），不通过须修正判断矩阵；不得只给权重不给 CR
+5. **熵权 / CRITIC 先统一指标方向**：负向指标须反向化，并说明零值/负值的平移处理；方向错则全部权重失效
+6. **GM(1,1) 必须做级比检验与后验差检验（C、P）**：未通过不得用于预测；"小样本"不等于可无条件套用
+7. **K-means 必须给 k 的选取依据**（肘部法/轮廓系数/业务约束）并做初值敏感性；DBSCAN 须给 eps 与 MinPts 的确定依据
+8. **类别不平衡不得只报 accuracy**：须给混淆矩阵 + F1/AUC/PR，并说明重采样或阈值策略
+9. **相关性不等于因果**：相关系数显著不得写成"导致/驱动"；因果主张须有识别策略（DID/因果图/工具变量）与反驳检验
+10. **区间与分位数预测必须报经验覆盖率**：只给点误差不足以支撑不确定性结论（含时序基础模型的分位数输出）
+11. **高成本方法先过可行性门槛**：强化学习、PINN、深度学习、时序基础模型须先按阶段四「调参与算力预算」做小规模验证，未过不得作主模型
+
 ***
 
 ### 2. 代码实现规范
 
 #### 遗传算法（GA）
 
-```python
-# 关键参数为启发式算法文献的经验常用范围；须按问题规模与解空间特点调整，并在论文中说明取值依据
-POP_SIZE = 120          # 种群规模：100-200
-MAX_GEN = 150           # 最大迭代：100-200
-CROSS_RATE = 0.85       # 交叉率：0.8-0.9
-MUT_RATE = 0.05         # 变异率：0.01-0.15（连续优化常用低端，组合优化可用高端）
-ELITE_RATE = 0.08       # 精英保留：5%-10%
-```
+参数为启发式文献的经验常用范围，须按问题规模与解空间调整并在论文中说明取值依据：种群规模 100–200、最大迭代 100–200、交叉率 0.8–0.9、变异率 0.01–0.15（连续优化取低端、组合优化可取高端）、精英保留 5%–10%。
 
-**必须包含**：
-
-- 智能初始化策略
-- 自适应变异
-- 重启机制
-- 精英保留
-
-**输出要求**：
-
-- 迭代收敛曲线图
-- 最优解决策变量表
-- 与基准方案对比（提升百分比）
+**必须包含**：智能初始化、自适应变异、重启机制、精英保留。
+**输出要求**：迭代收敛曲线图、最优解决策变量表、与基准方案对比（提升百分比）。
 
 #### 模拟退火（SA）
 
-```python
-T0 = 1000               # 初始温度
-T_MIN = 1e-8            # 终止温度
-COOLING_RATE = 0.95     # 冷却系数：0.9-0.99
-ITER_PER_TEMP = 100     # 每温度迭代次数
-```
-
-#### 0-1整数规划
-
-```python
-import pulp
-
-prob = pulp.LpProblem("Problem_Name", pulp.LpMaximize)
-x1 = pulp.LpVariable("x1", cat='Binary')
-x2 = pulp.LpVariable("x2", cat='Binary')
-# 目标函数示例：最大化利润
-prob += profit_per_unit * x1 + profit_per_unit2 * x2
-# 约束条件示例
-prob += cost_per_unit * x1 + cost_per_unit2 * x2 <= budget
-prob.solve()
-```
+经验起点：初始温度 1000、终止温度 1e-8、冷却系数 0.9–0.99、每温度迭代 100 次；初始温度按目标函数量级标定，冷却系数与迭代数权衡解质量与耗时。
 
 #### 数据读取模块
 
@@ -336,12 +424,14 @@ import openpyxl
 import pandas as pd
 
 def load_data(file_path):
-    """统一数据加载入口"""
+    """统一数据加载入口：表格类返回 DataFrame，PDF 与纯文本赛题返回 str"""
     ext = os.path.splitext(file_path)[1].lower()
     if ext == '.pdf':
         return read_pdf(file_path)
-    elif ext in ('.xlsx', '.xls'):
+    elif ext in ('.xlsx', '.xlsm', '.xls'):
         return read_excel(file_path)
+    elif ext in ('.csv', '.tsv', '.txt'):
+        return read_text_table(file_path)
     else:
         raise ValueError(f"不支持的数据格式: {ext}")
 
@@ -360,6 +450,71 @@ def read_excel(file_path):
     if ext == '.xls':
         return pd.read_excel(file_path, engine='xlrd')   # 需 pip install xlrd
     return pd.read_excel(file_path, engine='openpyxl')
+
+def read_text_table(file_path):
+    """读取 CSV/TSV/TXT：依次尝试常见编码与分隔符；.csv/.tsv 恒返回 DataFrame，
+    .txt 无法分成多列表格时返回原始文本（赛题说明类 TXT）。无需额外依赖（pandas + 内置 open）"""
+    ext = os.path.splitext(file_path)[1].lower()
+    seps = ('\t',) if ext == '.tsv' else (',', '\t', ';')
+    for enc in ('utf-8-sig', 'gbk'):          # 国赛附件常见 UTF-8 带 BOM 与 GBK 两种编码
+        decoded = False
+        for sep in seps:
+            try:
+                df = pd.read_csv(file_path, sep=sep, encoding=enc)
+            except (pd.errors.ParserError, UnicodeDecodeError, ValueError):
+                continue
+            decoded = True
+            if df.shape[1] > 1 or ext != '.txt':
+                return df
+        if decoded:                            # 单列 .txt：该编码可读但分不出表格，按纯文本返回
+            with open(file_path, 'r', encoding=enc, errors='replace') as f:
+                return f.read()
+    raise ValueError(f'无法解码文件（已尝试 utf-8/gbk）: {file_path}')
+```
+
+#### 调参与算力预算（高成本方法选用前执行）
+
+**先过可行性门槛，再全量**：强化学习、PINN/算子学习、深度学习、时序基础模型等高成本方法，先在小规模设置下跑通（抽样数据 / 短训练步数 / 短预测步长），确认三件事再投入全量：① 能收敛或给出可用输出；② 单次运行耗时可接受；③ 优于本题基线（见「基线对照清单」）。任一不满足即按「拟合性优先于高级性」退化为轻量方法，并在环境状态报告与正文说明退化原因。
+
+**搜索预算**：超参搜索须先定预算再开跑——试验次数上限（建议 30–100 次，按单次耗时反推）、搜索空间与取值依据、早停/剪枝规则；预算、最优参数与搜索曲线记入支撑材料，正文说明取值依据（第8章"参数设置无依据"扣分项据此判定）。禁止无上限网格搜索。
+
+**算力与依赖门槛**：无 GPU 时优先 CPU 可跑的方法；深度模型须显式声明设备与耗时。库的额外运行时依赖须在选型时确认（如 PySR 首次导入安装 Julia、时序基础模型需下载权重），不可用即按阶段零第 5 项退化。
+
+**失败退化链**：安装失败 / 权重下载失败 / 超时 / 不收敛 → 换同表等价实现 → 仍不行则退化为轻量方法，并在检索记录与交付说明中记录退化路径，不得静默换算法。
+
+#### 时序基础模型 TimesFM 3（前沿，选用时执行）
+
+- **安装**：`pip install "timesfm[torch]"`（PyPI 3.0.2，2026-09；Python≥3.10，与 README 的 Python 3.8+ 底线冲突时以该库要求为准或放弃选用）。权重首运行从 HuggingFace 下载；不可用时改 ModelScope 镜像（`AI-ModelScope/timesfm-2.0-500m-pytorch` 等，仅 2.x 系），下载失败按阶段零第 5 项退化 Prophet/ARIMA/GM(1,1) 并在环境状态报告注明
+- **选型纪律**：仅用于非商业学术用途（竞赛属此）；3.0 权重为 `timesfm-non-commercial-license-v1.0`（微调产物同受限制），商用/生产须换 2.5 权重（Apache-2.0）或走 Google Cloud 授权服务；论文须注明模型版本、checkpoint 与权重许可。零样本结果必须与本题基线（ARIMA/Prophet/GM(1,1)）同留出集对比 MAE/RMSE 后才可作主模型；分位数区间须报经验覆盖率，不得只报点误差
+- **可复现性**：checkpoint、推理设置（device/归一化/对称平均开关）记入支撑材料 README.txt；预测为确定性推理，随机性仅来自数据划分（沿用 SEED）
+
+```python
+# TimesFM 3.0 零样本预测（单变量 / 多变量+协变量）
+import numpy as np
+from timesfm3 import ModelConfig, TimesFM3Evaluator
+
+forecaster = TimesFM3Evaluator(ModelConfig(
+    checkpoint_path='google/timesfm-3.0-pytorch',   # 权重非商业许可，见选型纪律
+    per_core_batch_size=16,
+    device='cuda' if torch.cuda.is_available() else 'cpu',   # import torch 自行补
+))
+
+# 单变量：批量传入不等长一维序列
+out = list(forecaster.predict_batch([history.astype(np.float32)],
+                                    horizon=H, return_quantiles=True))[0]
+point, quant = out.forecast, out.quantiles        # (H,) 与 (H, 9)：0.1–0.9 分位数
+
+# 多变量+协变量：target (n_variates, ctx)；仅过去协变量 (k, ctx)；已知未来协变量 (m, ctx+H)
+out = list(forecaster.predict_batch(
+    contexts=[target], horizon=H,
+    past_only_covariates=[past_only], past_future_covariates=[past_future],
+    return_quantiles=True))[0]                    # forecast (n_variates, H)
+
+# 2.5 回退（Apache-2.0 权重、单变量+XReg）：接口不同，勿混用
+# model = timesfm.TimesFM_2p5_200M_torch.from_pretrained('google/timesfm-2.5-200m-pytorch')
+# model.compile(timesfm.ForecastConfig(max_context=1024, max_horizon=256,
+#               use_continuous_quantile_head=True))
+# point, quant = model.forecast(horizon=H, inputs=[history])   # quant 末维 10：均值+9 分位
 ```
 
 ***
@@ -420,26 +575,9 @@ def read_excel(file_path):
 - 方法名称与正文完全一致
 - 关键词3-5个，分号分隔
 
-#### 摘要写作模板
+#### 摘要写作骨架
 
-```
-[首句] 本文针对[赛题名称]问题，综合运用[方法A]、[方法B]和[方法C]，
-建立了[模型名称]模型，对[核心研究对象]进行了深入研究。主要工作如下：
-
-针对问题一，本文基于[假设条件]，构建了[模型类型]模型。以[决策变量]
-为决策变量，目标函数为[目标描述]；约束条件包括[约束1]、[约束2]等限制。
-本文利用[求解算法]进行求解。结果表明：[关键结果，必须包含具体数值]。
-
-针对问题二，在问题一的基础上，本文进一步综合考虑[新因素]，建立了
-[改进模型名称]模型。通过[分析手段]，发现[核心规律/结论]。
-计算得出[关键指标]为[具体数值]，相较于问题一提升了[X%]。
-
-针对问题三，考虑到[实际因素/动态变化]，我们构建了[动态/多目标/仿真]
-模型。利用[算法名称]进行迭代寻优，得到了最优方案为[方案描述]，
-此时总成本/效率为[具体数值]。
-
-本文构建的[模型/方案]具备普适性，适用于[推广场景]，具有现实意义。
-```
+首句总起（赛题 + 方法组合 + 模型名）→ 逐问一段（模型类型与决策变量/目标 → 求解算法 → 具体数值结果；后问须点明在前问基础上引入的新因素与提升幅度）→ 末句一句推广（结合本题情境，禁通用升华套话，见「去 AI 化要求」）。
 
 **关键要求**：
 
@@ -488,22 +626,26 @@ def read_excel(file_path):
 - **结果可视化与分析**：插入结果分析图，对图中数据特征与变化趋势进行物理解释。
 - **模型检验与误差分析**：按需进行统计检验（残差正态性、异方差性），给出检测量指标（MAE、RMSE、MAPE、R² 至少2项），与基准方法或文献结果对比并说明改进百分比，简要讨论模型对参数扰动的稳健性。
 
+**基线对照清单（最低要求，缺基线的提升百分比一律不成立）**：
+
+| 问题类型 | 必备基线 | 对照口径 |
+| :--- | :--- | :--- |
+| 预测 | naive（末值延续）+ 季节性 naive；至少 1 个统计基线（ARIMA/指数平滑）或 GM(1,1) | 同一留出集、同一预测步长、同一指标（MAE/RMSE） |
+| 优化 | 贪心/规则解（可行解上界）+ LP 松弛或精确法（最优性下界） | 报告 optimality gap；不可行须区分模型无解与算法未收敛 |
+| 分类 | 多数类基线 + 逻辑回归 | 同一划分、同一指标（F1/AUC/PR，不平衡时禁只报 accuracy） |
+| 评价/排序 | 等权 TOPSIS + 1 种替代赋权（熵权/CRITIC/AHP 之一） | 排名秩相关（Spearman）+ 权重扰动下的排名稳定性 |
+| 微分方程 | 解析解或极限情形 + 更细步长解 | 守恒量偏差、步长收敛阶 |
+| 聚类/异常检测 | K-means（给定 k）+ 随机标签基线 | 轮廓系数/ARI；异常检测须给已知异常样本的召回 |
+
+基线结果与主模型并列进同一张表，提升百分比须写明分母口径；只报主模型数值、或基线与主模型用了不同数据划分的，按第8章"算法/模型正确性"扣分。
+
 **图表描述要求（强制执行）**：论文中对每张图、每个表必须用至少一段话进行清晰仔细的描述，说明图中数据特征、变化趋势及由图表得出的结论，禁止图表孤立出现；图表解读句式模板见下方『正文语言表述规范』(7)。
 
 #### 优秀论文核心特征
 
-**1. 数据预处理必须包含**（所有题型适用）：
+**1. 数据预处理必须包含**（所有题型适用）：完整性检验（缺失值）、有效性检验（异常值）、可视化分布图。
 
-- 数据完整性检验（缺失值）
-- 数据有效性检验（异常值/离群值）
-- 可视化分布图
-
-**2. 结果验证必须与问题类型匹配**（禁止套用固定流程，参见模型求解规范"结果验证"环节）：
-
-- 优化类：迭代收敛曲线 + 替代算法互验 + 敏感性分析
-- 预测类：留出验证 + 误差指标（MAE/RMSE/R²）
-- 评价类：权重/数据扰动鲁棒性 + 评价方法对比
-- 微分方程类：解析解/极限情形对比 + 守恒量校验 + 步长收敛性
+**2. 结果验证必须与问题类型匹配**：按模型求解规范"结果验证"环节逐类执行（优化/预测/评价/微分方程各有专属手段），禁止套用固定流程。
 
 **3. 方法论闭环**：所选算法与模型结构适配、求解结果直接回应问题所问、验证手段与问题类型匹配，三者相互印证，禁止堆砌与问题无关的方法。
 
@@ -513,21 +655,7 @@ def read_excel(file_path):
 
 #### 模型评价规范
 
-**优点（3条，突出创新）**：
-
-1. "采用了XX方法，有效解决了XX难题"
-2. "模型经过多维度验证，结果可靠"
-3. "算法复杂度低/计算效率高/扩展性好"
-
-**缺点（2条，客观但非致命）**：
-
-1. 客观陈述局限性
-2. 数据/计算方面的不足
-
-- **禁止写致命缺陷**
-
-**推广（1段）**：
-"本模型可推广应用于[类似场景1]、[类似场景2]等领域，只需调整[某参数/某约束]即可适配。"
+结构固定：优点 3 条（突出创新、多维验证、效率/扩展性）→ 缺点 2 条（客观局限与数据/计算不足，**禁止写致命缺陷**）→ 推广 1 段（指明可迁移场景与需调整的参数/约束）。行文句式见「正文语言表述规范」(8)。
 
 #### 正文语言表述规范（正文全环节句式引导）
 
@@ -629,17 +757,6 @@ def read_excel(file_path):
 - 总结：综合以上分析、总体而言、概括来说（全文限量使用，替代高频"综上所述"）
 - 数据引导：如表X所示、由图X可见、从表X可以看出
 
-**(13) 负面清单**（与正面句式对应）
-
-- ❌ 机械分条（（1）（2）（3））行文
-- ❌ 无依据空泛词：很明显、显而易见、大量、效果很好（须改为具体数值）
-- ❌ 含糊收尾：一定程度上、有望、大概（每问必须给出明确结论段）
-- ❌ 纯形式衔接：问题间无承上启下、或衔接句不含实质信息
-- ❌ AI 痕迹：模板腔开头、套话升华、过渡词滥用、结构过度工整
-- ❌ 口语化主观：我们想、我觉得、其实、搞定了
-- ❌ 结论无因果：只给结果不给"由…可知"
-- ❌ 图表孤立：图/表前后无文字过渡
-
 ***
 
 ### 4. 可视化规范
@@ -666,13 +783,13 @@ def read_excel(file_path):
 | 三维曲面图           | 多参数优化、地形可视化    | ★★★★★ | matplotlib / plotly |
 | 热力图             | 相关性矩阵、参数分析     | ★★★★★ | seaborn / plotly    |
 | 等高线图            | 优化可行域、Pareto前沿 | ★★★★  | matplotlib          |
-| Pareto前沿图        | 多目标优化Pareto解集呈现         | ★★★★  | matplotlib（见模板5代码） |
+| Pareto前沿图        | 多目标优化Pareto解集呈现         | ★★★★  | matplotlib          |
 | 动态演化图           | 时序仿真、迭代收敛      | ★★★★  | matplotlib / plotly |
 | 相图/矢量场图         | 动力系统稳定性分析、传染病模型相轨迹（A题必备） | ★★★★ | matplotlib（streamplot/quiver） |
 | 小提琴图+箱线图叠加      | 数据分布、多组对比      | ★★★★★ | seaborn             |
 | 拟合对比图（含置信带）     | 模型拟合效果         | ★★★★  | matplotlib          |
 | 误差带图            | 置信区间、不确定性      | ★★★★  | matplotlib          |
-| 雷达图             | 多指标综合评价对比      | ★★★★  | matplotlib          |
+| 雷达图             | 多指标综合评价对比      | ★★★★  | matplotlib（plot_templates.radar） |
 | 桑基图             | 流量分配、资源流转      | ★★★★  | plotly              |
 | 联合分布图           | 多变量相关性分析       | ★★★★★ | seaborn / plotly    |
 | 脊线图（Ridge Plot） | 多组分布对比（优雅）     | ★★★★★ | matplotlib          |
@@ -693,8 +810,8 @@ def read_excel(file_path):
 | 蜂群图/点带图        | 分布 + 个体细节              | ★★★★ | seaborn             |
 | 矩阵散点图           | 多变量两两关系               | ★★★★ | seaborn             |
 | 堆叠面积图           | 多序列占比随时间变化           | ★★★★ | matplotlib / plotly |
-| 甘特图              | 任务排程、关键路径结果展示          | ★★★★ | matplotlib（broken_barh/barh） |
-| 龙卷风图            | 参数敏感性分析（单因素扰动影响排序）   | ★★★★ | matplotlib          |
+| 甘特图              | 任务排程、关键路径结果展示          | ★★★★ | matplotlib（plot_templates.gantt） |
+| 龙卷风图            | 参数敏感性分析（单因素扰动影响排序）   | ★★★★ | matplotlib（plot_templates.tornado） |
 | 泰勒图              | 多模型综合评价（相关系数与 RMSE 同图）  | ★★★★★ | matplotlib          |
 | 云雨图（raincloud）  | 配对分布 + 个体观测 + 均值趋势          | ★★★★★ | matplotlib / seaborn |
 | 交叉验证 ROC 图       | 分类器性能与折间置信带                 | ★★★★  | scikit-learn / matplotlib |
@@ -704,11 +821,7 @@ def read_excel(file_path):
 | 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
 | 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
 
-> **本章图表指引分三层，按需取用**：①「高频图表代码模板」——竞赛高频图型，直接给可跑代码；②「高级图表配色要点」——无内置模板的进阶图型（散点/气泡、雷达、桑基/和弦、地图热力、平行坐标），只给配色规则，图型自己画；③「基础图型绘制规范」——折线/柱状/箱线/环形/条形，只给规则，代码按规则现场生成（样式助手见 `plot_style.py`）。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。
-
-> 上表中未内置代码模板的进阶图型：若已安装 `mathmodel-figure` 技能可直接套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
-
-> 基础图型（折线/柱状/箱线/环形/条形）的逐项绘制规范见下文「基础图型绘制规范」。
+> **本章图表指引分三层，按需取用**：①「简单图型一次调用模块」+「高频图表代码模板」——热力图/Pareto/龙卷风/雷达/甘特调 `plot_templates` 函数，三维曲面/拟合+残差/迭代收敛给可跑代码；②「高级图表配色要点」——进阶图型（散点/气泡、桑基/和弦、地图热力、平行坐标）只给配色规则；③「基础图型绘制规范」——折线/柱状/箱线/环形/条形只给规则，代码现场生成。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。未内置的进阶图型：若已安装 `mathmodel-figure` 技能可套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
 
 #### 图型创新与跨图统一（图库不是边界）
 
@@ -744,9 +857,9 @@ def read_excel(file_path):
 import numpy as np
 import matplotlib.pyplot as plt
 from plot_style import (COLOR_BASELINE, COLOR_MAIN, FILL_ALPHA, FIG_FULL, FS_ANNOT,
-                        FS_LABEL, save_fig, style_axes)
+                        FS_LABEL, SEED, save_fig, style_axes)
 
-rng = np.random.default_rng(2026)              # 种子固定，结果可复现
+rng = np.random.default_rng(SEED)              # 种子统一取自 plot_style，结果可复现
 x = np.linspace(0, 10, 60)
 y_main = np.abs(np.sin(x)) + rng.normal(0, 0.08, x.size)
 
@@ -769,7 +882,7 @@ save_fig(fig, '../figures/final/figN_custom_explore.png', vector=True)
 
 多子图主次分明用 `gs = fig.add_gridspec(2, 2, width_ratios=[1.5, 1], hspace=0.45, wspace=0.3)` + `add_panel_label(ax, 'a')`：hero 面板不得与陪衬等大，每个子图回答一个**唯一**问题，同指标子图共享上下限（`sharey=True`）。
 
-**反哺规则**：同一图型在论文里出现 ≥2 次、或属竞赛高频图型，就按模板 1–5 的写法把它登记进下文「高频图表代码模板」，后续复用而不是每次现绘。
+**反哺规则**：同一图型在论文里出现 ≥2 次、或属竞赛高频图型，就登记复用——简单图型补进 `plot_templates.py`、复杂图型按内置模板写法补进「高频图表代码模板」，不每次现绘。
 
 #### Nature 风格配色（必须使用）
 
@@ -877,6 +990,7 @@ TONE_RAMP = (COLOR_MAIN, COLOR_MAIN_LIGHT, COLOR_MAIN_PALE, NEUTRAL_MID)  # 深=
 LINE_PALETTE = [COLOR_MAIN, ACCENT_ORANGE, ACCENT_PURPLE, COLOR_BASELINE]
 FILL_ALPHA = 0.15          # 置信带/填充一律淡，不遮数据
 HATCH_SEQUENCE = ('', '---', '|||')   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
+SEED = 42                  # 全局随机种子（唯一出处，见阶段四「可复现性」；一切含随机性的脚本引用它）
 
 # ===== 色图（与身份色同族，保证跨图色彩一致） =====
 DIVERGENT_CMAP = LinearSegmentedColormap.from_list(
@@ -957,18 +1071,20 @@ def add_panel_label(ax, label, x=-0.11, y=1.02, fontsize=FS_PANEL):
     return ax
 
 def annotate_bars(ax, bars, fmt='{:.2f}', orient='v', fontsize=FS_ANNOT, color=NEUTRAL_DARK):
-    """柱/条端数值标注：偏移按轴范围自适应，负值自动移到下方，小字深灰不抢数据。"""
+    """柱/条端数值标注：偏移按轴范围自适应，负值自动移到反侧，小字深灰不抢数据；
+    端点坐标 = 起点 + 宽/高，兼容非零基线（left/bottom，如龙卷风的 base 基准线）。"""
     lo, hi = (ax.get_ylim() if orient == 'v' else ax.get_xlim())
     step = (hi - lo) * 0.015
     for bar in bars:
         if orient == 'v':
-            value, x, y = bar.get_height(), bar.get_x() + bar.get_width() / 2, bar.get_height()
-            y += step if value >= 0 else -step
+            value = bar.get_height()
+            x = bar.get_x() + bar.get_width() / 2
+            y = bar.get_y() + value + (step if value >= 0 else -step)
             ax.text(x, y, fmt.format(value), ha='center',
                     va='bottom' if value >= 0 else 'top', fontsize=fontsize, color=color)
         else:
             value = bar.get_width()
-            x = value + (step if value >= 0 else -step)
+            x = bar.get_x() + value + (step if value >= 0 else -step)
             y = bar.get_y() + bar.get_height() / 2
             ax.text(x, y, fmt.format(value), va='center',
                     ha='left' if value >= 0 else 'right', fontsize=fontsize, color=color)
@@ -1037,9 +1153,125 @@ apply_style()   # import 即完成一次性初始化
 
 各绘图脚本一律走同一入口：取色取字号只从本模块，脚本内不出现 hex 与裸字号；骨架见「现绘最小骨架」。
 
+#### 简单图型一次调用模块（code/plot_templates.py）
+
+> 简单图型不再现场手写：热力图 / Pareto / 龙卷风 / 雷达 / 甘特一律调用本模块函数（样式契约与数据图相同：禁 hex、禁裸字号、中文标注、`save_fig` 统一出口）。复杂图型仍用下方「高频图表代码模板」。
+
+```python
+# code/plot_templates.py —— 简单图型一次调用模块（样式全部取自 plot_style，禁 hex 与裸字号）
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from plot_style import (ACCENT_ORANGE, COLOR_BASELINE, COLOR_INK, COLOR_MAIN,
+                        DIVERGENT_CMAP, SEQUENTIAL_CMAP, FIG_FULL, FIG_SQUARE,
+                        FS_ANNOT, FS_TICK, FS_TITLE, NEUTRAL_DARK, NEUTRAL_LIGHT,
+                        annotate_bars, identity_color, save_fig, style_axes)
+
+def heatmap_corr(corr, path, title='参数相关性矩阵', cbar_label='相关系数', grayscale=False):
+    """相关矩阵热力图：遮罩上三角 + 格内数值 + 白格线；grayscale=True 换单色顺序系供黑白打印"""
+    fig, ax = plt.subplots(figsize=FIG_SQUARE)
+    sns.heatmap(corr, mask=np.triu(np.ones_like(corr, dtype=bool), k=1),
+                annot=True, fmt='.2f',
+                cmap=SEQUENTIAL_CMAP if grayscale else DIVERGENT_CMAP,
+                center=None if grayscale else 0,
+                vmin=None if grayscale else -1, vmax=None if grayscale else 1,
+                square=True, linewidths=0.6, linecolor='white',
+                annot_kws={'fontsize': FS_TICK},
+                cbar_kws={'shrink': 0.8, 'label': cbar_label}, ax=ax)
+    ax.tick_params(length=0)                      # 热图靠格线定位，刻度线是噪声
+    ax.set_title(title, fontsize=FS_TITLE, fontweight='bold', pad=10)
+    save_fig(fig, path, dpi=300)                  # 小格数值标注需 300 DPI
+
+def pareto_front(obj_all, obj_pareto, path, xlabel='目标 f1', ylabel='目标 f2',
+                 title='Pareto 前沿与折中解'):
+    """双目标 Pareto：候选解背景点云 + 非支配前沿白心标记 + L1 折中解橙色星标与灰虚线投影"""
+    fig, ax = plt.subplots(figsize=FIG_SQUARE)
+    ax.scatter(*np.asarray(obj_all).T, s=15, c=NEUTRAL_LIGHT, alpha=0.6,
+               edgecolors='none', label='候选解', zorder=2)
+    front = sorted(map(tuple, obj_pareto))
+    ax.plot([p[0] for p in front], [p[1] for p in front], color=COLOR_MAIN,
+            linewidth=2, marker='o', markersize=6, markerfacecolor='white',
+            markeredgewidth=1.5, label='Pareto 前沿', zorder=4)
+    lo = np.min(front, axis=0)                    # 理想点 = 两目标各自最小值
+    knee = min(front, key=lambda p: abs(p[0] - lo[0]) + abs(p[1] - lo[1]))
+    ax.scatter(*knee, marker='*', s=220, c=ACCENT_ORANGE, edgecolors='white',
+               linewidths=0.8, zorder=6, label='折中解')
+    ax.axvline(knee[0], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
+    ax.axhline(knee[1], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
+    ax.annotate(f'折中解 ({knee[0]:.2f}, {knee[1]:.2f})', xy=knee, xytext=(10, -16),
+                textcoords='offset points', fontsize=FS_ANNOT, color=ACCENT_ORANGE)
+    ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)  # 纯文本，禁 mathtext 混排中文
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='both')
+    ax.legend(frameon=False, loc='upper right')
+    save_fig(fig, path, vector=True)
+
+def tornado(labels, low, high, path, base=0.0, xlabel='指标值',
+            title='参数敏感性分析（龙卷风图）'):
+    """单因素扰动：每参数低/高两情形横条、按影响跨度降序；零基准灰虚线，条端标带符号数值"""
+    low, high = np.asarray(low, float), np.asarray(high, float)
+    order = np.argsort(np.abs(high - low))[::-1]
+    y = np.arange(len(order))
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    for vals, off, name, c in ((low[order], -0.2, '低值情形', identity_color(1)),
+                               (high[order], 0.2, '高值情形', identity_color(0))):
+        bars = ax.barh(y + off, vals - base, height=0.36, left=base, color=c,
+                       edgecolor='white', linewidth=0.8, label=name)
+        annotate_bars(ax, bars, fmt='{:+.2f}', orient='h')
+    ax.axvline(base, color=COLOR_BASELINE, linewidth=1.0, linestyle='--')
+    ax.set_yticks(y)
+    ax.set_yticklabels(np.asarray(labels)[order])
+    ax.invert_yaxis()                             # 影响跨度最大者置顶（龙卷风惯例）
+    ax.set_xlabel(xlabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='x')
+    ax.legend(frameon=False, loc='upper center', bbox_to_anchor=(0.5, -0.14), ncols=2)
+    save_fig(fig, path, vector=True)
+
+def radar(labels, series, path, title='多指标综合评价', ylim=(0, 1)):
+    """雷达图：series={名称: 分值列表}；首系列主角蓝实线，其余身份色虚线；网格浅灰"""
+    names = list(series)
+    ang = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
+    ang += ang[:1]                                # 闭合
+    fig, ax = plt.subplots(figsize=FIG_SQUARE, subplot_kw={'polar': True})
+    for i, name in enumerate(names):
+        v = list(series[name]) + [series[name][0]]
+        c = identity_color(i)
+        ax.plot(ang, v, color=c, linewidth=2 if i == 0 else 1.5,
+                linestyle='-' if i == 0 else '--', label=name)
+        ax.fill(ang, v, color=c, alpha=0.2 if i == 0 else 0.1)
+    ax.set_xticks(ang[:-1])
+    ax.set_xticklabels(labels, fontsize=FS_TICK)
+    ax.set_ylim(*ylim)
+    ax.tick_params(axis='y', labelsize=FS_TICK, colors=COLOR_INK)
+    ax.grid(color=NEUTRAL_LIGHT, linewidth=0.6)
+    ax.spines['polar'].set_color(NEUTRAL_LIGHT)
+    ax.set_title(title, fontsize=FS_TITLE, pad=18)
+    ax.legend(frameon=False, loc='upper center', bbox_to_anchor=(0.5, -0.08),
+              ncols=len(names))
+    save_fig(fig, path, vector=True)
+
+def gantt(tasks, path, critical=(), xlabel='时间', title='任务排程甘特图'):
+    """tasks=[(名称, 开始, 工期)]，按开始排序；关键路径任务（critical 集合）橙色，其余主角蓝"""
+    tasks = sorted(tasks, key=lambda t: t[1])
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    for i, (name, s, d) in enumerate(tasks):
+        c = ACCENT_ORANGE if name in critical else COLOR_MAIN
+        ax.broken_barh([(s, d)], (i - 0.3, 0.6), facecolors=c,
+                       edgecolors='white', linewidth=0.8)
+        ax.text(s + d, i, f' {d}', va='center', fontsize=FS_ANNOT, color=NEUTRAL_DARK)
+    ax.set_yticks(range(len(tasks)))
+    ax.set_yticklabels([t[0] for t in tasks], fontsize=FS_TICK)
+    ax.invert_yaxis()
+    ax.set_xlabel(xlabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='x')
+    save_fig(fig, path, vector=True)
+```
+
 #### 高频图表代码模板
 
-> **函数化建议**：正式项目中可将每个模板封装为参数化函数（仅暴露数据/标签/路径参数），统一放入 `code/plot_templates.py` 复用，避免逐次复制改造；样式初始化统一复用 `code/plot_style.py`（见上），模板内勿重复设置 rcParams（参考上方统一绘图工具模块的组织方式）。
+> 只保留布局/对齐易错的复杂图型代码（三维曲面、拟合+残差、迭代收敛）；简单图型一律调用上方 `plot_templates.py` 函数，不现场手写。**函数化建议**：复杂模板在正式项目中也可封装为参数化函数并入 `code/plot_templates.py` 复用；样式统一走 `code/plot_style.py`，模板内勿重复设置 rcParams。
 
 **模板1：三维曲面图（定比三维框 + 独立 colorbar）**
 
@@ -1087,37 +1319,9 @@ ax.set_title('参数响应曲面', fontsize=FS_TITLE * S, pad=18)
 save_fig(fig, '../figures/final/figN_surface_param.png', vector=True, dpi=200, tight=False)   # 密度类 3D 图按分级策略取 200 DPI；tight=False 防 z 轴标签被裁
 ```
 
-**模板2：热力图（带数值标注 + 遮罩上三角）**
+**热力图**：`plot_templates.heatmap_corr(corr, path)`（上三角遮罩、发散色图、白格线、格内数值、300 DPI 均已内置）；黑白打印传 `grayscale=True`。
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from plot_style import DIVERGENT_CMAP, FS_TICK, FS_TITLE, save_fig
-# 发散色图：负主角蓝 → 中心浅灰 → 正珊红（禁 jet/rainbow）；黑白打印换 SEQUENTIAL_CMAP
-
-fig, ax = plt.subplots(figsize=(7, 6))             # 近方形版面亦可直接用 FIG_SQUARE
-mask = np.triu(np.ones_like(corr_matrix, dtype=bool), k=1)  # 遮罩上三角（不含对角线），更简洁
-
-sns.heatmap(corr_matrix, mask=mask,
-    annot=True, fmt='.2f',
-    cmap=DIVERGENT_CMAP,
-    center=0,                 # 以 0 为中心，正负方向可读
-    vmin=-1, vmax=1,
-    square=True,
-    linewidths=0.6,
-    linecolor='white',        # 白色细格线分隔，不用灰线（Nature 分隔口径）
-    annot_kws={'fontsize': FS_TICK},   # 格内数值用常规无衬线，禁等宽字体（Consolas 等与全篇不符）
-    cbar_kws={'shrink': 0.8, 'label': '相关系数'},
-    ax=ax
-)
-ax.tick_params(length=0)                          # 刻度线归零：热图靠格线定位，刻度是噪声
-ax.set_title('参数相关性矩阵', fontsize=FS_TITLE, fontweight='bold', pad=10)
-ax.set_xlabel('')                                 # 特征名已在刻度标签给出，勿重复
-save_fig(fig, '../figures/final/figN_heat_corr.png', dpi=300)   # 小格数值标注需 300 DPI 保清晰
-```
-
-**模板3：拟合对比图（含置信带 + 残差子图）**
+**模板2：拟合对比图（含置信带 + 残差子图）**
 
 ```python
 import numpy as np
@@ -1155,7 +1359,7 @@ style_axes(ax2, grid='y'); add_panel_label(ax2, 'b')
 save_fig(fig, '../figures/final/figN_fit_resid.png', vector=True)
 ```
 
-**模板4：迭代收敛曲线（种群适应度 + 最优/均值适应度）**
+**模板3：迭代收敛曲线（种群适应度 + 最优/均值适应度）**
 
 ```python
 import numpy as np
@@ -1204,46 +1408,12 @@ ax1.legend(frameon=False, loc='upper center', bbox_to_anchor=(0.5, -0.20),
 save_fig(fig, '../figures/final/figN_converge_ga.png', vector=True)
 ```
 
-**模板5：Pareto前沿图（多目标优化）**
-
-```python
-import matplotlib.pyplot as plt
-from plot_style import (ACCENT_ORANGE, COLOR_BASELINE, COLOR_MAIN, FIG_SQUARE, FS_ANNOT,
-                        NEUTRAL_LIGHT, save_fig, style_axes)
-
-fig, ax = plt.subplots(figsize=FIG_SQUARE)
-
-# 候选解浅灰点云（背景），非支配前沿主角蓝白心标记（主证据）
-ax.scatter(obj1_all, obj2_all, s=15, c=NEUTRAL_LIGHT, alpha=0.6,
-           edgecolors='none', label='候选解', zorder=2)
-pareto_sorted = sorted(zip(obj1_pareto, obj2_pareto))
-ax.plot([p[0] for p in pareto_sorted], [p[1] for p in pareto_sorted],
-    color=COLOR_MAIN, linewidth=2, marker='o', markersize=6,
-    markerfacecolor='white', markeredgewidth=1.5,
-    label='Pareto 前沿', zorder=4)
-
-# 折中解（离理想点最近，按两目标各自极值等权衡量）用橙色星标；理想投影用基准灰虚线
-o1_min = min(p[0] for p in pareto_sorted)
-o2_min = min(p[1] for p in pareto_sorted)
-knee = min(pareto_sorted, key=lambda p: abs(p[0] - o1_min) + abs(p[1] - o2_min))
-ax.scatter(*knee, marker='*', s=220, c=ACCENT_ORANGE, edgecolors='white',
-           linewidths=0.8, zorder=6, label='折中解')
-ax.axvline(knee[0], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
-ax.axhline(knee[1], color=COLOR_BASELINE, linewidth=0.8, linestyle='--', zorder=1)
-ax.annotate(f'折中解 ({knee[0]:.2f}, {knee[1]:.2f})', xy=knee, xytext=(10, -16),
-            textcoords='offset points', fontsize=FS_ANNOT, color=ACCENT_ORANGE)
-
-ax.set_xlabel('目标 f1（成本）')                    # 纯文本下标，禁 mathtext 与中文混排
-ax.set_ylabel('目标 f2（工期）')
-style_axes(ax, grid='both')
-ax.legend(frameon=False, loc='upper right')
-save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
-```
+**Pareto 前沿**：`plot_templates.pareto_front(obj_all, obj_pareto, path)`（背景点云、白心前沿、L1 折中解星标与灰虚线投影均已内置）。折中方案的选取依据须在正文说明（见第3章"结果验证"多目标口径）。
 
 #### 高级图表配色要点
 
 - **散点/气泡图**：单系列主角蓝 `COLOR_MAIN` α0.5–0.6（重叠自然加深体现密度）；离群点/关键解用 `ACCENT_ORANGE` + 白描边并放大；多系列按 `identity_color(i)` 取色；叠加拟合线用主角蓝加粗
-- **雷达图**：填充主角蓝 α0.2（极淡不遮网格）；轮廓主角蓝 2pt 实线；对比模型取次系列身份色虚线、填充 α0.1；网格线 `NEUTRAL_LIGHT`
+- **雷达图**：调用 `plot_templates.radar`（首系列主角蓝实线 + α0.2 填充，对比系列身份色虚线 + α0.1，网格 `NEUTRAL_LIGHT`）
 - **桑基图/和弦图**：节点按身份色序列着色；连线（流量）半透明 0.4–0.6 且**颜色继承起始节点**，便于追踪流量归属
 - **地图热力图**：底图极简（仅海岸线/省界浅灰）；数据层用 `SEQUENTIAL_CMAP` 单色顺序系；**禁红绿配色**（色盲不友好）
 - **平行坐标图**：样本**降采样（≤60 条/类）防线条过密**；透明度 0.3–0.5；按类别取 `identity_color(i)`；图例置于图外防重叠
@@ -1288,7 +1458,7 @@ save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 - 数值轴从 0 起始、上限留约 12%；条高 0.6；条端数值用 `annotate_bars(ax, bars, orient='h')`，不手写 `ax.text`
 - 类别标签左对齐（横向天然满足）、条形统一高度；网格走 `style_axes(ax, grid='x')`
 
-**热力图灰度打印变体**：需黑白打印的场景（如附录矩阵图），把模板2 的发散色图 `DIVERGENT_CMAP` 换成 `SEQUENTIAL_CMAP`（浅→主角蓝单色顺序系），格线仍保持白色 `linewidths=0.6, linecolor='white'`，并在 `cbar_kws` 里标注数值区间；层级差异改由明度承担，灰度打印仍可读。
+**热力图灰度打印变体**：`heatmap_corr(..., grayscale=True)` 换 `SEQUENTIAL_CMAP`（浅→主角蓝单色顺序系），格线仍白色、cbar 标注数值区间；层级由明度承担，灰度打印仍可读。
 
 #### 流程图专项规范与代码模板（第二章问题分析图 / 开发流程 / 系统架构图）
 
@@ -1338,12 +1508,11 @@ save_fig(fig, '../figures/final/figN_pareto_2obj.png', vector=True)
 ```python
 # ===== 问题分析流程图 / 系统架构图模板（第二章问题分析图，内容 dict 驱动） =====
 # 画布口径：1 px = 0.01 inch，y 轴向下（越靠下 y 越大），与字宽预算同一单位
-from math import hypot
 import unicodedata
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.figure import Figure
-from matplotlib.patches import FancyBboxPatch, Polygon
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 from plot_style import save_fig          # 统一保存入口；中文字体已由其探测配置
 
 FS, ICON_H, RADIUS = 16, 22, 5           # 字号 / 图标行占位 / 圆角（px）；16 px ≈ 11.5 pt
@@ -1356,13 +1525,9 @@ def text_width(s, fs=FS):
     """一行文字的像素宽：汉字/全角 = 字号，半角 = 字号/2 —— 超框判断的唯一依据"""
     return sum(fs if unicodedata.east_asian_width(c) in 'WF' else fs / 2 for c in str(s))
 
-def lines_of(v):
-    return [''] if v is None else ([str(x) for x in v] if isinstance(v, (list, tuple))
-                                   else str(v).split('\n'))
-
 def check_module(m, fs, W, H, problems):
     """出图前门禁：宽度/高度/越界三类逐槽记录，攒够一起报，免得改一处跑一次"""
-    ls = lines_of(m['text'])
+    ls = m['text'].split('\n')           # 文本一律 str，用 \n 手动断行（禁自动折行）
     for ln in ls:
         need = text_width(ln, fs)
         if need > m['w'] - 8:
@@ -1392,7 +1557,7 @@ def draw_box(ax, m, fs):
         ax.text(m['x'] + m['w']/2, m['y'] + 4 + ICON_H/2, m['icon'], ha='center',
                 va='center', fontsize=fs + 2, color=TXT, zorder=3)
         top, box_h = m['y'] + ICON_H, m['h'] - ICON_H - 4
-    ax.text(m['x'] + m['w']/2, top + box_h/2, '\n'.join(lines_of(m['text'])),
+    ax.text(m['x'] + m['w']/2, top + box_h/2, m['text'],
             ha='center', va='center', fontsize=fs, color=TXT, fontweight='bold',
             linespacing=(fs + 3) / fs, zorder=3)
 
@@ -1414,24 +1579,16 @@ def route(p0, s0, p1, s1, via=None):
         return [p0, p1] if abs(y0-y1) < 0.5 else [p0, ((x0+x1)/2, y0), ((x0+x1)/2, y1), p1]
     return [p0, (x0, y1), p1] if v0 else [p0, (x1, y0), p1]
 
-def arrow_head(ax, p_from, p_to, size, color):
-    dx, dy = p_to[0] - p_from[0], p_to[1] - p_from[1]
-    n = hypot(dx, dy)
-    if n == 0:
-        return
-    ux, uy = dx/n, dy/n
-    L, hw = max(size, 1.6), 0.45 * size
-    bx, by = p_to[0] - ux*L, p_to[1] - uy*L
-    ax.add_patch(Polygon([(bx-uy*hw, by+ux*hw), p_to, (bx+uy*hw, by-ux*hw)], closed=True,
-        facecolor=color, edgecolor=color, linewidth=0.6, joinstyle='miter', zorder=6.5))
-
 def draw_edge(ax, m0, m1, primary=True, s0='bottom', s1='top', via=None):
-    """主流程=炭墨实线，次要数据流=岩石灰虚线；整条折线一次 plot，虚线节奏才连续"""
+    """主流程=炭墨实线，次要数据流=岩石灰虚线；主体折线一次 plot 保虚线节奏连续，
+    末段（必为直线）交给 FancyArrowPatch 连箭头一起画，免去手写三角几何"""
     pts = route(anchor(m0, s0), s0, anchor(m1, s1), s1, via)
     color, ls = (TXT, 'solid') if primary else (GREY, DASH)
-    ax.plot([p[0] for p in pts], [p[1] for p in pts], color=color, linewidth=1.2,
-            linestyle=ls, zorder=6, solid_capstyle='butt')
-    arrow_head(ax, pts[-2], pts[-1], 6, color)
+    if len(pts) > 2:
+        ax.plot([p[0] for p in pts[:-1]], [p[1] for p in pts[:-1]], color=color,
+                linewidth=1.2, linestyle=ls, zorder=6, solid_capstyle='butt')
+    ax.add_patch(FancyArrowPatch(pts[-2], pts[-1], arrowstyle='-|>', mutation_scale=15,
+                 color=color, linewidth=1.2, linestyle=ls, shrinkA=0, shrinkB=0, zorder=6.5))
 
 # ---- 内容源：只写"有哪些模块、谁指向谁"，折线坐标交给 route 自动算 ----
 CONTENT = {
@@ -1778,7 +1935,7 @@ save_fig(render(CONTENT), '../figures/final/fig1_flow_q_overview.png', vector=Tr
 
 #### Word 文档后处理模块（python-docx，用于 pandoc 转换后的版式微调）
 
-> ⚠️ **角色定位（重要）**：Word 文档由 **pandoc 从 paper.tex 转换生成**（见阶段五生成命令），公式已自动转为 OMML 原生数学格式。下方 python-docx 脚本**仅用于 pandoc 转换后的版式微调**（页眉留空、页码页脚、中文字体、三线表核对），**不得用它从头生成全文或手工插入公式**，否则 Word 中将丢失全部数学公式。
+> ⚠️ **角色定位（重要）**：Word 文档由 **pandoc 从 paper.tex 转换生成**（见阶段五生成命令），公式已自动转为 OMML 原生数学格式。下方 python-docx 脚本**仅用于 pandoc 转换后的版式微调**（页眉留空、页码页脚、中西文字体、标题层级与图表标题、三线表核对），**不得用它从头生成全文或手工插入公式**，否则 Word 中将丢失全部数学公式。
 
 ```python
 from docx import Document
@@ -1789,9 +1946,10 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 
-def set_cjk_font(run, font_name='宋体', size=Pt(12), bold=False):
-    """统一设置中西文字体与字号（先设西文名确保 rPr/rFonts 存在，再设中文名）"""
-    run.font.name = font_name
+def set_cjk_font(run, font_name='宋体', size=Pt(12), bold=False, latin='Times New Roman'):
+    """统一设置中西文字体与字号：中文用 font_name，西文/数字用 latin
+    （默认 Times New Roman，依第5章"页面设置"表；先设西文名确保 rPr/rFonts 存在，再设中文名）"""
+    run.font.name = latin
     run._element.rPr.rFonts.set(qn('w:eastAsia'), font_name)
     run.font.size = size
     run.bold = bold
@@ -1898,6 +2056,15 @@ def restyle_word_paper(doc_path='../paper/paper.docx'):
             para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for r in para.runs:
                 set_cjk_font(r, '黑体', Pt(14), bold=True)
+        elif style_name.startswith(('Heading 2', 'Heading 3')):
+            # 二/三级标题：小四黑体左对齐（第5章"页面设置"表），不得落入正文分支
+            para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            for r in para.runs:
+                set_cjk_font(r, '黑体', Pt(12), bold=True)
+        elif 'Caption' in style_name:                 # 图题/表题（pandoc 的 Caption/Image Caption/Table Caption）：五号宋体居中
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for r in para.runs:
+                set_cjk_font(r, '宋体', Pt(10.5))
         elif text.startswith('摘要'):                  # 摘要标签段：四号黑体
             for r in para.runs:
                 set_cjk_font(r, '黑体', Pt(14), bold=True)
@@ -1907,14 +2074,16 @@ def restyle_word_paper(doc_path='../paper/paper.docx'):
             for r in para.runs:
                 set_cjk_font(r, '宋体', Pt(12))
     
-    # ---- 既有表格统一三线表样式 + 单元格文字居中（不新建表格） ----
+    # ---- 既有表格统一三线表样式 + 单元格对齐按 §5.10（不新建表格） ----
     for table in doc.tables:
         set_three_line_table(table)
         for row in table.rows:
-            for cell in row.cells:
+            for idx, cell in enumerate(row.cells):
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
                 for p in cell.paragraphs:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    # 首列（编号/符号）居中、其余列左对齐（§5.10 假设表口径，全文表格统一沿用）
+                    p.alignment = (WD_ALIGN_PARAGRAPH.CENTER if idx == 0
+                                   else WD_ALIGN_PARAGRAPH.LEFT)
 
     # 保存（覆盖写回 pandoc 结果）
     doc.save(doc_path)
@@ -1927,7 +2096,7 @@ restyle_word_paper()
 **Word文档格式要点**：
 
 - 中文字体设置：`run._element.rPr.rFonts.set(qn('w:eastAsia'), '字体名')`
-- 西文字体：Times New Roman（默认或显式设置）
+- 西文字体：Times New Roman（`set_cjk_font` 的 `latin` 参数默认值，与中文字体分离设置，不再跟随宋体/黑体）
 - 行距：1倍（`paragraph_format.line_spacing = 1`）
 - 首行缩进：2字符（约0.85cm）
 - 上述字体/字号/行距/缩进的**目标值以本章"页面设置"表为唯一出处**，脚本只负责按该表落地，不另立数值
@@ -2069,6 +2238,14 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 - `paper/paper.docx` 必须存在且可正常打开
 - 两文件内容一致（标题、摘要、数值、图表编号对应）
 
+#### [严重] 打包与可复现性（判据出处：阶段七）
+
+- requirements.txt 存在，覆盖代码实际 import 的全部第三方库（含版本号）
+- figures/final/ 全部图片被 paper.tex 引用，无被引用但缺失的图文件（阶段七自动核对）
+- figures/tmp/ 已整体删除，无调试残留
+- 支撑材料 zip 结构与附录A 清单一致；包名与内部路径无身份信息
+- 至少 1 问代码重跑可复现论文关键数值（同种子）
+
 #### [严重] PDF 与 Word 格式一致性检查（重点）
 
 - 重点检查 Word 文档格式须与 PDF 一致。**目标值不在本节另列**：字体/字号/行距/缩进以第5章"页面设置"表为唯一出处，三线表与图表标题位置以 §5.7 为准，页码与页眉以 §5.0 为准。
@@ -2087,6 +2264,8 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 - 参数设置需有依据（参考文献建议范围）
 - 算法介绍结合本题问题的结构与数据特点，无通用模板式介绍文字；关键超参选取逻辑正文已阐释
 - 题目明确要求的基线/对照已逐项完成
+- 已逐条通过第1章「算法误用红线」自查，无命中项
+- 已按第3章「基线对照清单」完成本题型的最低基线，且与主模型同数据划分、同指标口径
 
 #### [严重] 变量与符号一致性
 
@@ -2136,6 +2315,8 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 - 已做与问题类型匹配的稳健性/敏感性检验（扰动对象为参数/权重/样本/初值等），关键结论在合理扰动下稳定
 - 预测类含多维度误差拆解；结果注入下游决策时含误差传导分析
 - 多目标含全域 Pareto 与折中方案依据；优化类含最优性间隙或精确法对照
+- 区间/分位数预测已报经验覆盖率（第1章「算法误用红线」第 10 条）
+- 超参搜索已声明试验预算与早停规则，高成本方法已过小规模可行性验证（阶段四「调参与算力预算」）
 
 #### [严重] 联网检索与参考文献查证
 
@@ -2211,6 +2392,10 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 | 求解结果明显不合理（如违反物理约束） | -8 |
 | 参数设置无依据（未引用文献建议范围，或该引用无法回溯到查证台账） | -3 |
 | 题目明确要求的基线/对照缺失 | -5 |
+| 命中「算法误用红线」（判据见第1章：小样本上深度学习、t-SNE 坐标上聚类、时序随机切分、AHP 无 CR、指标方向错、GM(1,1) 无后验差检验、K-means 无 k 依据、不平衡只报 accuracy 等） | 每处 -3 |
+| 题型最低基线缺失或基线与主模型划分/口径不一致（判据见第3章「基线对照清单」） | -4 |
+| 区间/分位数预测未报经验覆盖率 | -2 |
+| 超参搜索无预算/早停声明，或高成本方法未过可行性验证即作主模型（判据见阶段四「调参与算力预算」） | -3 |
 | 解集/最优性论证不足（多目标仅靠人为权重集无全域 Pareto；优化缺最优性间隙或精确法对照） | -3 |
 | 算法介绍通用模板化、未结合问题，超参选取逻辑未阐释 | -4 |
 | 正文未实做误差分析/敏感性分析/对比实验 | 每缺一项 -2（仅判**正文是否实做**；摘要是否陈述归"摘要"维度） |
@@ -2323,12 +2508,21 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 | 指标权重确定 | 熵权法、CRITIC、AHP |
 | 最短路径/网络流 | Dijkstra/Floyd、最大流、最小生成树 |
 | 路径规划/配送 | TSP/VRP + GA/蚁群求解 |
-| 时序预测 | ARIMA、Prophet、LSTM；小样本用GM(1,1) |
+| 时序预测 | ARIMA、Prophet、LSTM；小样本用GM(1,1)；长序列/多变量/含协变量可试 TimesFM 3（零样本，须基线对比+许可核查） |
 | 机理演化类（A题） | 微分方程组 + RK4数值解 + 敏感性分析 |
 | 方程求根/非线性求解 | 二分法、牛顿迭代法 |
 | 插值/数据补全 | 三次样条插值、拉格朗日插值 |
 | 项目排程/关键路径 | 关键路径法（CPM/PERT） |
 | 连续参数快速优化 | 梯度下降、共轭梯度（大空间则用智能优化） |
+| 分类/判别 | 逻辑回归（基线）、随机森林、XGBoost/CatBoost；不平衡须重采样 + F1/AUC，禁只报 accuracy |
+| 聚类/分群 | K-means（须给 k 依据）、DBSCAN（任意形状）、层次聚类、GMM；t-SNE/UMAP 仅作可视化，禁在其坐标上聚类 |
+| 异常检测/离群识别 | 3σ/IQR（单变量）、孤立森林、LOF；须给已知异常的召回与误报率 |
+| 参数估计/反演 | 非线性最小二乘（`least_squares`/`lmfit`）、MLE、贝叶斯估计；须报参数置信区间与可辨识性 |
+| 不确定性量化/区间预测 | Bootstrap 置信区间、分位数回归、蒙特卡洛误差传播；区间须报经验覆盖率 |
+| 文本/舆情类 | 分词 + TF-IDF、LDA 主题模型、文本分类；情感词典须核来源 |
+| 空间/地理类 | Moran's I 空间自相关、克里金插值、空间回归；地图可视化用 geopandas/folium |
+| 序贯决策/动态调度 | 动态规划（状态可枚举）、强化学习（状态高维，先过算力门槛）；须与贪心/规则基线对比 |
+| 生存/失效时间 | Kaplan–Meier、Cox 比例风险（含删失数据） |
 
 ### 算法实现速查
 
@@ -2339,7 +2533,7 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 | 线性规划 / 0-1整数规划 / 混合整数 | `pulp`（自带CBC求解器）或 `scipy.optimize.milp`；禁止手写单纯形法 |
 | 非线性/约束优化 | `scipy.optimize.minimize`（SLSQP/trust-constr）；凸问题用 `cvxpy` |
 | 连续全局优化 | `scipy.optimize.differential_evolution`（差分进化）、`dual_annealing`（模拟退火） |
-| 组合启发式（GA/SA/PSO等） | 自行实现，编码与算子须贴合问题；指派/TSP可用 `python-ortools` |
+| 组合启发式（GA/SA/PSO等） | 自行实现，编码与算子须贴合问题；指派/TSP可用 `ortools` |
 | 多目标优化（NSGA-II/III） | `pymoo`（需单独安装） |
 | 微分方程数值解 | `scipy.integrate.solve_ivp`（自动选RK45/BDF）；手写RK4仅作原理演示 |
 | 图论（最短路/生成树/最大流/匹配） | `networkx`；大规模稀疏图用 `scipy.sparse.csgraph` |
@@ -2347,11 +2541,30 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 | 统计检验与相关性 | `scipy.stats`（ttest_ind、chi2_contingency、spearmanr、shapiro） |
 | 回归分析 | 统计推断用 `statsmodels`（提供p值/置信区间）；纯预测用 `sklearn` |
 | 时间序列 | `statsmodels`（ARIMA、ExponentialSmoothing）；Prophet 需单独安装 `prophet` |
+| 时序基础模型（零样本） | `timesfm[torch]`（3.0 原生多变量/协变量/分位数，权重非商业；2.5 权重 Apache-2.0 可回退）；接口与选型纪律见阶段四「时序基础模型 TimesFM 3」 |
 | 机器学习（分类/聚类/降维） | `scikit-learn`；梯度提升树用 `xgboost`/`lightgbm` |
 | 灰色预测GM(1,1)/马尔可夫链 | 自写（累加生成 + 最小二乘参数估计 + 后验差检验C/P） |
 | 熵权法/TOPSIS/AHP/灰色关联/模糊综合评价 | 自写（矩阵标准化 + 赋权公式），注意负向指标标准化方向 |
 | 仿真（蒙特卡洛/离散事件/排队/元胞自动机） | `numpy.random` + 自写事件驱动框架 |
-| 信号处理 | `numpy.fft`（FFT）、`pywt`（小波，需单独安装） |
+| 信号处理 | `numpy.fft`（FFT）、`PyWavelets`（小波，导入名 `pywt`，需单独安装） |
+| 经验模态分解 EMD/HHT | `EMD-signal`（导入名 `PyEMD`，含 EEMD/CEEMDAN；需单独安装）；HHT = EMD + Hilbert 谱（`scipy.signal.hilbert`） |
+| 卡尔曼滤波与状态估计 | `filterpy`（需单独安装）；线性高斯小系统可 `numpy` 自写递推 |
+| 深度学习（CNN/Transformer/AE） | `torch`（PyTorch）；先过「调参与算力预算」可行性门槛，无 GPU 时降规模或退化树模型 |
+| PINN / 算子学习 | `deepxde`（PINN 首选，需选后端）；或 `torch` 自写损失；FNO/DeepONet 优先查官方实现并核许可证 |
+| 强化学习（DQN/PPO/SAC/TD3） | `stable-baselines3` + `gymnasium`（自定义环境须实现 Gymnasium 接口）；禁止手写策略梯度，先过可行性门槛 |
+| 图神经网络 GNN/GAT | `torch-geometric`（需与 torch 版本匹配）；小规模图可 `networkx` 特征 + 树模型替代 |
+| 梯度提升树补充 | `catboost`（类别特征多时首选，需单独安装）；与 `xgboost`/`lightgbm` 同表对比择优 |
+| 超参搜索 / 贝叶斯优化 | `optuna`（TPE + 早停剪枝，需单独安装）；小空间用 `sklearn.model_selection.GridSearchCV`；连续黑箱可 `scipy.optimize` 或高斯过程自写 |
+| 异常检测 | `sklearn.ensemble.IsolationForest`、`sklearn.neighbors.LocalOutlierFactor`；单变量用 3σ/IQR 自写 |
+| 不确定性量化 | `scipy.stats.bootstrap`（BCa 置信区间）、`sklearn.linear_model.QuantileRegressor`、`statsmodels` 分位数回归；蒙特卡洛传播用 `numpy.random` + SEED |
+| 参数反演 / 带界拟合 | `scipy.optimize.least_squares`（含 bounds）、`lmfit`（参数置信区间，需单独安装） |
+| 生存分析 | `lifelines`（Kaplan–Meier、Cox，需单独安装） |
+| 文本挖掘 | `jieba`（中文分词）+ `sklearn` TfidfVectorizer / LatentDirichletAllocation；情感词典须核来源与许可 |
+| 空间统计与插值 | `esda`（Moran's I / LISA）、`pykrige`（克里金）、`geopandas`（空间数据）；均需单独安装 |
+| 效率评价 DEA | 自写（CCR/BCC 线性规划逐 DMU 求解，用 `pulp` 或 `scipy.optimize.linprog`） |
+| 符号回归 | `pysr`（精度高，**首次导入需装 Julia**、Python≥3.10）；轻量替代 `gplearn`（纯 Python，无需 Julia） |
+| 因果推断 | `dowhy`（因果图 + 反驳检验）、`econml`（DID/双重机器学习）；均需单独安装，识别假设须在正文论证 |
+| 仿真框架（离散事件/ABM） | `simpy`（离散事件与排队）、`mesa`（多智能体）；均需单独安装，替代自写事件循环 |
 
 ### 问题递进关系
 

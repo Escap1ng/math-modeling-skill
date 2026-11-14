@@ -34,7 +34,8 @@ An end-to-end AI skill for mathematical modeling contests: **problem understandi
 
 | Highlight | Description |
 | :--- | :--- |
-| End-to-end automation | Seven stages in one run — see [Workflow](#workflow) |
+| End-to-end automation | Eight stages (0–7) in one run — see [Workflow](#workflow) |
+| Tiered workflow | Full modeling runs all stages; algorithm advice, per-question code, and paper polishing run only the needed subset — see [Workflow](#workflow) |
 | Single-file skill | The whole skill is one `SKILL.md` — no plugins, no scripts; copy and go, easy to customize |
 | Dual-format paper | PDF and Word in one run — most comparable setups deliver only a single Markdown or PDF alone |
 | Curated algorithm library | High-frequency and frontier methods at a glance — see [Algorithm Library](#algorithm-library) |
@@ -42,6 +43,7 @@ An end-to-end AI skill for mathematical modeling contests: **problem understandi
 | Award-level formatting | Award-paper layout with anonymity compliance — see [Paper & Formatting Standards](#paper--formatting-standards) |
 | Traceable research | Web research across background, methods, open-source code, and references, with a search log and a citation verification ledger |
 | Quality loop | Five-dimension 0–100 self-scoring with a circuit breaker — see [Scoring System](#scoring-system) |
+| Reproducible delivery | Global random seed + version-pinned requirements.txt + pre-packaging anonymity check and figure-reference cross-check — see [Workflow](#workflow) |
 
 ---
 
@@ -58,7 +60,7 @@ Once the skill is installed in your AI IDE, finish a modeling task in three step
 ```
 1. Upload the problem files (PDF / Excel / text) or paste the problem content
  ↓
-2. The skill runs the seven-stage workflow automatically (see Workflow below)
+2. The skill runs the eight-stage workflow (Stages 0–7) automatically (see Workflow below)
  ↓
 3. Get the complete project tree: code/ + figures/ + paper/ (structure below)
 ```
@@ -67,16 +69,19 @@ Once the skill is installed in your AI IDE, finish a modeling task in three step
 
 ## Workflow
 
+Classify before executing: **Tier A · full modeling** (default, from problem input to final paper) runs the eight stages below (Stages 0–7); **Tier B · single service** (algorithm advice / per-question code / paper polishing) runs only the matching subset — no forced full environment check, workspace setup, or paper scoring (rules and subsets: see the "工作流分级" section in SKILL.md).
+
 ```
 Stage 0 env check → Stage 1 problem analysis → Stage 2 workspace setup → Stage 3 algorithm selection
  ↓
-Final output ← Stage 6 score ≥ 85? → Stage 5 paper output ← Stage 4 code implementation
+Final output ← Stage 7 packaging & anonymity check ← Stage 6 score ≥ 85? → Stage 5 paper output ← Stage 4 code implementation
  ↓ no
  Targeted fixes → Re-score (≤ 3 rounds)
 ```
 
 | Stage | Work |
 | :--- | :--- |
+| Tiering · Service level | Tier A runs the full workflow; Tier B runs the matching subset (advice / per-question code / polishing); default A when unclear, B when the user says "only / just" |
 | Stage 0 · Environment check | Verify xelatex / pandoc / Python deps and plotting libraries, and determine the web-research capability tier; auto-install what is missing; output a status report |
 | Stage 1 · Problem analysis | Web research on the problem background and on existing public solutions; classify the problem (optimization / prediction / evaluation / classification / ODE); map data, constraints, and output targets per sub-question |
 | Stage 2 · Workspace setup | Create an `answer/` tree per problem with unified code / figures / paper locations |
@@ -84,6 +89,7 @@ Final output ← Stage 6 score ≥ 85? → Stage 5 paper output ← Stage 4 code
 | Stage 4 · Code implementation | Check mature libraries and high-star open-source implementations first (license vetted); then complete runnable code, vectorized numpy, publication-grade figures via the unified style module |
 | Stage 5 · Paper output | xelatex for PDF, pandoc for Word (OMML formulas); both formats delivered together |
 | Stage 6 · Scoring & refinement | Five-dimension 0–100 self-scoring; below the gate, fix and re-score (see [Scoring System](#scoring-system)) |
+| Stage 7 · Packaging & anonymity check | Anonymity scan of text / file names / figures / metadata, bidirectional figure-reference check, tmp cleanup, reproducibility spot-run, requirements.txt and support-materials zip |
 
 ---
 
@@ -113,7 +119,7 @@ Check which packages are missing (silent when all are present):
 python -c "import importlib.util as u; [print('MISSING:', m) for m in ['numpy','pandas','scipy','matplotlib','seaborn','openpyxl','xlrd','docx','fitz'] if u.find_spec(m) is None]"
 ```
 
-Install per problem: `lightgbm` (gradient boosting), `python-ortools` (combinatorial optimization / assignment), `pymoo` (NSGA-II/III), `prophet` (time series), `pywt` (wavelets), `shap` (model explanation), `geopandas` / `folium` (geospatial & maps), `adjustText` (label placement).
+Install per problem: `lightgbm` (gradient boosting), `ortools` (combinatorial optimization / assignment), `pymoo` (NSGA-II/III), `prophet` (time series), `PyWavelets` (wavelets; import name `pywt`), `timesfm[torch]` (TimesFM 3 time-series foundation model, Python>=3.10, non-commercial weights), `shap` (model explanation), `geopandas` / `folium` (geospatial & maps), `adjustText` (label placement); also on demand: `optuna` (hyperparameter search), `catboost`, `lmfit` (bounded fitting), `lifelines` (survival analysis), `filterpy` (Kalman), `EMD-signal` (EMD; import name `PyEMD`), `simpy` / `mesa` (simulation), `esda` / `pykrige` (spatial statistics), `jieba` (Chinese tokenization), `gplearn` / `pysr` (symbolic regression; PySR needs Julia), `dowhy` / `econml` (causal inference), `torch` / `deepxde` / `stable-baselines3`+`gymnasium` / `torch-geometric` (deep learning, PINN, RL, graph networks).
 
 Stage 0 also probes web-research capability (keyword search and full-text retrieval of a given URL) and records the result in the environment report as available / partially available / unavailable; when unavailable, the fallback rules apply and no reference may be filled in from memory.
 
@@ -134,6 +140,7 @@ Stage 0 also probes web-research capability (keyword search and full-text retrie
 | Physics & Engineering | Kinematics, Lagrangian mechanics, finite element analysis, rigid-body dynamics<br>numerical ODE solvers (Euler, RK4, finite difference, SIR / SEIR, stability analysis)<br>Monte Carlo, discrete-event simulation, cellular automata, agent-based modeling, queuing theory |
 | Signal Processing | FFT, wavelet transform, EMD, Kalman filter, Hilbert-Huang transform (HHT) |
 | Frontier Methods | PINN, operator learning (DeepONet / FNO), digital twin<br>symbolic regression, explainable AI (SHAP / LIME), causal inference (DID, causal graphs)<br>multi-objective optimization (NSGA-II / III, MOEA/D), robust / Bayesian optimization, GNN / GAT, community detection (Louvain) |
+| Time-Series Foundation Models | TimesFM 3.0 (zero-shot, native multivariate + covariates + quantiles; non-commercial weights, Apache-2.0 2.5 weights as fallback)<br>alternatives: Chronos-2, Moirai 2.0 (check weight license and capability boundaries before adoption) |
 
 ---
 
@@ -156,7 +163,7 @@ Stage 0 also probes web-research capability (keyword search and full-text retrie
 - **Figure count** — at least one color figure per sub-question; 6+ recommended for the whole paper (minimum 4); a problem-analysis flowchart / technical-route diagram is mandatory in chapter two
 - **Unified style module** — palette, colormaps, hatches, three standard sizes, the font scale, and style helpers (`style_axes` / `annotate_bars` / `delta_annotation`) defined once in `plot_style.py`; preview figures match final quality
 - **The library is not the boundary** — figure type follows the data and the conclusion being argued; drawing beyond the templates is encouraged, while style stays fixed: one shared set of constants plus a pre-registered method→color map for cross-figure consistency
-- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), heatmap (upper-triangle mask), fit comparison (confidence band + residual subplot), convergence curve, Pareto front, problem-analysis flowchart (content-driven, auto orthogonal routing, text-fit gate); advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the matching `mathmodel-figure` templates as a supplement
+- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), fit comparison (confidence band + residual subplot), convergence curve, problem-analysis flowchart (content-driven, auto orthogonal routing, native arrow patches, text-fit gate); five simple types (heatmap, Pareto front, tornado, radar, Gantt) ship as one-call `plot_templates.py` functions; advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the matching `mathmodel-figure` templates as a supplement
 
 ---
 
@@ -182,7 +189,8 @@ Below the gate, deductions are listed and fixed, then re-scored — at most 3 ro
 ```
 Problem_X_short_name/
 └── answer/
-    ├── code/       # Python code (q1_*.py, q2_*.py, plus the plot_style.py style module)
+    ├── requirements.txt  # Pinned dependencies (generated in Stage 4, shipped in Stage 7)
+    ├── code/       # Python code (q1_*.py, q2_*.py, plus plot_style.py and plot_templates.py)
     ├── figures/
     │   ├── final/  # Delivery figures (semantic names, referenced by the paper)
     │   └── tmp/    # Debug figures (same quality, deleted before delivery)
@@ -193,7 +201,7 @@ Problem_X_short_name/
 
 | File | Description |
 | :--- | :--- |
-| `SKILL.md` | Skill core: seven-stage workflow, algorithm library, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
+| `SKILL.md` | Skill core: eight-stage workflow (Stages 0–7), algorithm library, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
 | `README.md` | Chinese documentation |
 | `README.en.md` | English documentation (this file) |
 | `LICENSE` | MIT License |
