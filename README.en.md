@@ -2,11 +2,11 @@
 
 # Math Modeling Helper
 
-**数学建模竞赛辅助技能 · V3.1.0**
+**数学建模竞赛辅助技能 · V3.2.0**
 
 Problem analysis · Algorithm selection · Code implementation · Paper polishing — an end-to-end AI modeling skill from problem input to final paper
 
-![Version](https://img.shields.io/badge/version-V3.1.0-2563eb)
+![Version](https://img.shields.io/badge/version-V3.2.0-2563eb)
 ![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?color=16a34a)
 ![Stars](https://img.shields.io/github/stars/Escap1ng/math-modeling-skill?color=f59e0b)
 ![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill?color=0ea5e9)
@@ -14,7 +14,7 @@ Problem analysis · Algorithm selection · Code implementation · Paper polishin
 
 [中文](https://github.com/Escap1ng/math-modeling-skill/blob/main/README.md) | **English**
 
-[Overview](#overview) · [Highlights](#highlights) · [Usage](#usage) · [Quick Start](#quick-start) · [Workflow](#workflow) · [Environment](#environment) · [Algorithm Library](#algorithm-library) · [Paper & Formatting Standards](#paper--formatting-standards) · [Visualization Standards](#visualization-standards) · [Scoring System](#scoring-system) · [Structure & Files](#structure--files) · [License](#license)
+[Overview](#overview) · [Highlights](#highlights) · [Usage](#usage) · [Quick Start](#quick-start) · [Workflow](#workflow) · [Environment](#environment) · [Algorithm Library](#algorithm-library) · [Paper & Formatting Standards](#paper--formatting-standards) · [Visualization Standards](#visualization-standards) · [Scoring System](#scoring-system) · [Structure & Files](#structure--files) · [Changelog](#changelog) · [License](#license)
 
 </div>
 
@@ -38,7 +38,8 @@ An end-to-end AI skill for mathematical modeling contests: **problem understandi
 | Tiered workflow | Full modeling runs all stages; algorithm advice, per-question code, and paper polishing run only the needed subset — see [Workflow](#workflow) |
 | Single-file skill | The whole skill is one `SKILL.md` — no plugins, no scripts; copy and go, easy to customize |
 | Dual-format paper | PDF and Word in one run — most comparable setups deliver only a single Markdown or PDF alone |
-| Curated algorithm library | High-frequency and frontier methods at a glance — see [Algorithm Library](#algorithm-library) |
+| Curated algorithm library | High-frequency and frontier methods, incl. time-series foundation models and uncertainty quantification — see [Algorithm Library](#algorithm-library) |
+| Misuse guards & baselines | 11 algorithm-misuse red lines + per-type minimum baselines + tuning/compute budget — see [Algorithm Library](#algorithm-library) |
 | Publication-grade figures | Nature three-role palette and a unified style module — see [Visualization Standards](#visualization-standards) |
 | Award-level formatting | Award-paper layout with anonymity compliance — see [Paper & Formatting Standards](#paper--formatting-standards) |
 | Traceable research | Web research across background, methods, open-source code, and references, with a search log and a citation verification ledger |
@@ -58,12 +59,20 @@ Copy the root `SKILL.md` into your agent's skills directory (the exact path vari
 Once the skill is installed in your AI IDE, finish a modeling task in three steps:
 
 ```
-1. Upload the problem files (PDF / Excel / text) or paste the problem content
+1. Upload the problem files (PDF / Excel / CSV / TSV / TXT) or paste the problem content
  ↓
 2. The skill runs the eight-stage workflow (Stages 0–7) automatically (see Workflow below)
  ↓
 3. Get the complete project tree: code/ + figures/ + paper/ (structure below)
 ```
+
+Need only one part? State the scope and it runs as a single service — no workspace setup, no paper, no scoring:
+
+| Example request | What actually runs |
+| :--- | :--- |
+| "Which algorithm fits sub-question 2? Just the reasoning." | Web research → candidate comparison → selection verdict with rationale |
+| "Write code for sub-question 1 only, no paper yet." | Check only the libs it needs → create code/figures only → runnable code and figures |
+| "Polish this draft; don't touch the models or numbers." | Revise per writing standards → run the checklist → deliver the revision with a change log |
 
 ---
 
@@ -136,11 +145,42 @@ Stage 0 also probes web-research capability (keyword search and full-text retrie
 | Swarm Intelligence | Differential Evolution (DE), Ant Colony (ACO), Grey Wolf (GWO), Whale Optimization (WOA), Artificial Bee Colony (ABC)<br>Sparrow Search (SSA), Dung Beetle (DBO), Golden Jackal (GJO), Beluga Whale (BWO) |
 | Machine Learning & Deep Learning | XGBoost, SVM, Random Forest, LightGBM, CatBoost, KNN<br>Transformer, CNN, RNN / LSTM, autoencoders (AE / VAE), attention mechanisms<br>Reinforcement learning: DQN, PPO, SAC, TD3 |
 | Statistics & Data Analysis | Hypothesis tests (Z / t / chi-square, ANOVA, Shapiro-Wilk), correlation (Spearman / Kendall)<br>regression & interpolation (RSM, GPR, ridge / Lasso, polynomial / stepwise)<br>dimensionality reduction & clustering (PCA, t-SNE, UMAP, K-means / DBSCAN, hierarchical, GMM)<br>time series (ARIMA, LSTM / GRU, Prophet, Holt-Winters, VAR)<br>small-sample forecasting (Grey GM(1,1), Markov chains, combined forecasting)<br>classification (Fisher discriminant, logistic regression, naive Bayes, decision trees)<br>statistical inference (MLE, EM algorithm, Bayesian estimation) |
+| Anomaly Detection & Uncertainty | 3σ / IQR rules, Isolation Forest, LOF, DBSCAN noise points<br>bootstrap CIs (BCa), quantile regression & interval forecasts (empirical coverage required), Monte Carlo error propagation |
+| Inverse Problems & Survival Analysis | Nonlinear least squares (LM / trust region), bounded fitting with parameter CIs, identifiability analysis<br>Kaplan–Meier curves, Cox proportional hazards (censored data) |
+| Text & Spatial Analysis | Chinese tokenization + TF-IDF, LDA topic models, text classification & sentiment lexicons<br>Moran's I / LISA spatial autocorrelation, kriging, spatial weight matrices & spatial regression |
+| Hyperparameter Search | Grid / random search, TPE & Bayesian optimization, early-stopping pruning (trial budget required up front) |
 | Evaluation & Decision Making | TOPSIS (entropy-weight TOPSIS preferred), entropy weight, CRITIC, AHP<br>grey relational analysis, fuzzy comprehensive evaluation, DEA<br>expected-value decision, decision-tree analysis, cost-benefit analysis |
 | Physics & Engineering | Kinematics, Lagrangian mechanics, finite element analysis, rigid-body dynamics<br>numerical ODE solvers (Euler, RK4, finite difference, SIR / SEIR, stability analysis)<br>Monte Carlo, discrete-event simulation, cellular automata, agent-based modeling, queuing theory |
 | Signal Processing | FFT, wavelet transform, EMD, Kalman filter, Hilbert-Huang transform (HHT) |
 | Frontier Methods | PINN, operator learning (DeepONet / FNO), digital twin<br>symbolic regression, explainable AI (SHAP / LIME), causal inference (DID, causal graphs)<br>multi-objective optimization (NSGA-II / III, MOEA/D), robust / Bayesian optimization, GNN / GAT, community detection (Louvain) |
 | Time-Series Foundation Models | TimesFM 3.0 (zero-shot, native multivariate + covariates + quantiles; non-commercial weights, Apache-2.0 2.5 weights as fallback)<br>alternatives: Chronos-2, Moirai 2.0 (check weight license and capability boundaries before adoption) |
+
+### Selection guards: misuse red lines and baselines
+
+The library answers *what is available*; the three disciplines below answer *what not to misuse* and *what to compare against*. All three feed the quality checklist and the scoring rules.
+
+**Algorithm-misuse red lines (11 rules, checked at selection time; any hit forces a change)**
+
+| Category | Typical red lines |
+| :--- | :--- |
+| Capacity vs. data | Deep learning / RL on small samples; expensive methods used as the main model without a feasibility run |
+| Embedding & split misuse | Clustering or regression on t-SNE / UMAP coordinates (visualization only); random splits on time series causing leakage |
+| Missing checks | AHP without the consistency ratio; GM(1,1) without ratio and posterior-variance tests; K-means without a basis for k |
+| Wrong conventions | Entropy / CRITIC weights without unifying indicator direction; accuracy alone on imbalanced classes; interval forecasts without empirical coverage |
+| Causal overreach | Writing "causes / drives" from a significant correlation, with no identification strategy or refutation test |
+
+**Minimum baselines per problem type** (an improvement percentage without a baseline does not count)
+
+| Type | Required baselines |
+| :--- | :--- |
+| Forecasting | Naive (last value) + seasonal naive, plus ARIMA / exponential smoothing or GM(1,1) |
+| Optimization | Greedy / rule-based feasible solution + LP relaxation or exact lower bound, reporting the optimality gap |
+| Classification | Majority-class baseline + logistic regression (accuracy alone banned when imbalanced) |
+| Evaluation / ranking | Equal-weight TOPSIS + one alternative weighting, compared by rank correlation and weight-perturbation stability |
+| ODEs | Analytic or limiting-case solution + a finer-step solution, compared by conservation error and convergence order |
+| Clustering / anomalies | K-means with a stated k + a random-label baseline; anomalies need recall on known cases |
+
+**Tuning & compute budget** — expensive methods (RL / PINN / deep learning / time-series foundation models) must first pass a small-scale run checking convergence, runtime, and whether they beat the baseline before going full scale; hyperparameter search needs a trial cap and early-stopping rule up front; failures follow "swap to an equivalent implementation → fall back to a lightweight method" with the fallback path recorded — never a silent algorithm swap.
 
 ---
 
@@ -201,10 +241,45 @@ Problem_X_short_name/
 
 | File | Description |
 | :--- | :--- |
-| `SKILL.md` | Skill core: eight-stage workflow (Stages 0–7), algorithm library, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
+| `SKILL.md` | Skill core: tiered workflow and eight stages (0–7), algorithm library with misuse red lines, baseline and compute-budget rules, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
 | `README.md` | Chinese documentation |
 | `README.en.md` | English documentation (this file) |
 | `LICENSE` | MIT License |
+
+---
+
+## Changelog
+
+### V3.2.0
+
+**Added**
+
+- **Tiered workflow**: Tier A runs the full pipeline; Tier B (algorithm advice / per-question code / paper polishing) runs only the needed stages — light requests no longer trigger a full environment check and paper scoring
+- **Stage 7 · packaging & anonymity check**: anonymity scan extended to file names, code comments, figure watermarks, and document metadata; bidirectional figure↔`.tex` reference check; reproducibility spot-run; support-materials zip with run instructions
+- **Reproducible delivery**: one global random seed (`plot_style.SEED`, single source) + version-pinned `requirements.txt`
+- **Plot functions**: `plot_templates.py` one-call figures — heatmap, Pareto front, plus three new types: tornado, radar, Gantt
+- **Time-series foundation model**: TimesFM 3.0 (multivariate / covariates / quantile zero-shot), with the Apache-2.0 2.5-weight fallback and a non-commercial license notice
+- **7 new algorithm groups**: anomaly detection, uncertainty quantification, inverse problems & fitting, survival analysis, text mining, spatial statistics, hyperparameter search
+- **Three selection disciplines**: 11 misuse red lines, per-type minimum baselines, tuning & compute budget (with a fallback chain)
+- **Lookup tables completed**: +19 implementation rows and +9 problem-type entry rows, closing the gap where a method existed in the library but had no implementation pointer or selection entry
+
+**Fixed**
+
+- Dependency names: `python-ortools` → `ortools`; install name `pywt` → `PyWavelets` (import name stays `pywt`)
+- Data loading now covers `.xlsm / .csv / .tsv / .txt`, auto-detecting UTF-8(BOM) / GBK and three delimiters, falling back to raw text for prose TXT files
+- Word post-processing now matches the layout spec: separate CJK/Latin fonts (Latin = Times New Roman), heading level 2/3 and caption styles added, tables use a centered first column with left-aligned rest
+- Bar-label anchor changed to "origin + width/height", fixing misplaced labels with a non-zero baseline (e.g. the tornado reference line)
+
+**Slimmed**
+
+- Removed boilerplate sample code and two simple-figure templates; merged duplicated abstract templates, evaluation wording, and negative lists
+- Flowchart template now uses native arrow patches, dropping hand-written triangle geometry and redundant helpers
+
+> **Behavior changes**: Word fonts and table alignment moved from *violating the skill's own spec* to compliant; the random seed is unified; Stage 7 adds a final gate. These are gap-filling and tightening, not feature removal. TimesFM 3.0 weights are non-commercial (contests qualify); commercial use requires the 2.5 weights or the official licensed service.
+
+### V3.1.0
+
+First public release: seven-stage pipeline, dual-format paper delivery, Nature three-role visualization standard, CUMCM award-level layout, and the five-dimension 0–100 scoring system.
 
 ---
 
