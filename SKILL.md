@@ -173,7 +173,7 @@ description: "数学建模竞赛全流程辅助：赛题分析、算法优选、
 - **可复现性（强制）**：含随机性的脚本一律 `from plot_style import SEED`，使用 `np.random.default_rng(SEED)`（用 random 模块时另加 `random.seed(SEED)`）；种子只在 plot_style.py 定义一处，各脚本不得另写数值；种子值记入支撑材料 README.txt
 - **调参与算力预算**：超参搜索先定试验上限与早停规则，高成本方法先过小规模可行性验证（见「调参与算力预算」）
 - **依赖清单**：交付前按实际用到的库生成 `answer/requirements.txt`（锁定版本号），覆盖代码全部第三方 import，随阶段七打包交付
-- 可视化保存至 `figures/final/`，学术风格，分辨率按第4章分级 DPI 策略，样式与配色遵循第4章可视化规范，建议使用统一样式模块 `code/plot_style.py`（见第4章）
+- 可视化保存至 `figures/final/`，学术风格，分辨率按第4章分级 DPI 策略，样式与配色遵循第4章可视化规范，建议使用统一样式模块 `code/plot_style.py`（见第4章）；出图前先过第4章「选图论证与反冗余审计」立图表合同，渲染前过「渲染前数据门禁」，渲染后过四轮质检
 
 ### 阶段五：论文输出
 
@@ -761,6 +761,38 @@ out = list(forecaster.predict_batch(
 
 ### 4. 可视化规范
 
+#### 选图论证与反冗余审计（画图前强制）
+
+> 方法来源：academic-figure-skill（TingxiYu/academic-figure-skill，Apache-2.0）的问题驱动工作流，已按本 skill 的竞赛场景与 `plot_style.py` 样式契约适配。**先论证、再取模板、后渲染**；本节管"画什么、为什么画"，下方各节管"怎么画"。
+
+**第一步 · 图表合同（每问动笔前写三行，记入建模依据）**
+
+1. **核心结论**：一句话写出本问图表要证明的结论（读者扫读 3 秒应得出的判断，含关键数值方向）。写不出这句话，说明分析还没做完，先回阶段三/四，不许先画图
+2. **证据链**：每张图对应一个独立子问题，逐图写明"这张图回答什么 → 用什么数据 → 为何选此图型"；图型由数据结构与结论决定（呼应「图型创新与跨图统一」），不是由模板库存决定
+3. **数量与主次**：图数 = 独立子问题数，且不低于下方「强制要求」的数量下限；多子图组合时指定唯一 hero 面板（承载核心结论，面积约为陪衬面板的 1.2–1.5 倍，置左上或中央，用全饱和主色；陪衬走 `TONE_RAMP` 降饱和）
+
+**第二步 · 反冗余审计（逐对检查，命中即合并或替换）**
+
+| 冗余陷阱 | 典型表现 | 修正 |
+| :--- | :--- | :--- |
+| 同数据两画法 | 占比饼图 + 同数据堆叠柱 | 保留一种（优先柱状），腾出的图位给关系类证据 |
+| 绝对量重复 | 总量柱状 + 同数值热图 | 热图改 z-score/相对基准偏差，回答"谁异常"而非重复"是多少" |
+| 子集重复 | 全量排名 + 同排序 Top-N | Top-N 图改为"该指标 vs 另一变量"的关系图 |
+| 两个排名 | 同一批对象按指标 A 排名 + 按指标 B 排名 | 合并为一张双指标图（散点/双轴），或一张改敏感性分析 |
+| 可互相推导 | 一张图能由另一张直接算出 | 删去可推导的那张 |
+
+- 判据：**盖住某张图，读者若无信息损失，该图就是冗余**。三层递进最稳：总览（整体格局）→ 偏差（各组独特之处）→ 关系（变量如何共变），每层信息与上一层正交
+- **跨小问去重（全文级，阶段七前强制复查）**：不同小问引用同一数据同一画法的图（如各问都放同一张总览热图/同一收敛曲线）只保留首次出现，后文用"如图 X 所示"回指；确需再现时换视角（局部放大、偏差分解、分组切片）并在图题注明与图 X 的差异。交付前对 figures/final/ 逐对目视比对，同数据同画法即合并
+- 审计不豁免数量下限：删冗余图后若低于「强制要求」下限，补的是**新子问题**的图，不是把旧信息换个画法凑数
+- 叙事顺序：数据证据在前、模型示意在后；发现性结果在前、验证性结果在后；简单图在前、密集图在后；共享坐标轴的子图相邻放置
+
+**第三步 · 取模板优先级（Copy-First，禁止守着模板重写简化版）**
+
+1. 先查「推荐图表类型」表与 `plot_templates.py`／「高频图表代码模板」：命中即**整段复制调用**，只改数据入口与图题文字，不改布局、配色、标注逻辑
+2. 列名/口径不同但数据结构相同 → 只做**数据映射适配**（改列名、分组列、数据路径），视觉系统原样保留；映射关系写进脚本注释
+3. 结构不匹配或无模板 → 按「图型创新与跨图统一」现绘，样式仍全部取自 `plot_style.py`
+4. 借鉴外部图型资产时按三类参数继承：**硬参数**（透明度、线宽、点大小、带宽、层叠比例——逐字照抄）、**比例参数**（字号、尺寸——换算到本 skill 的 `FS_*` 与 `FIG_*` 档位）、**逻辑参数**（图例开关、网格开关、统计标注格式——照抄行为）；配色一律换成本 skill 语义色板，**不得引入外部 hex**
+
 #### 强制要求
 
 - **每道小题至少1张彩色图**（建议2-3张）
@@ -776,6 +808,34 @@ out = list(forecaster.predict_batch(
 - **预览与正式版同品质**：调试/预览图（含 `figures/tmp/`、示范图）与交付图同一品质——一律 `savefig.dpi=300` 保存（密度类图可按分级策略降至 200），禁止生成低分辨率预览图
 - **全局-局部互补**：时序类结果应附关键时段局部放大图；分配/调度类结果应附关键资源利用率视图，与全局图互补，避免局部特征被遗漏
 
+#### 渲染前数据门禁与出图后质检（强制）
+
+> 方法来源同上（academic-figure-skill 的数据校验门禁与四轮 QA 协议，阈值按竞赛数据规模适配）。**代码跑通 ≠ 图能看 ≠ 图有信号**；门禁在渲染前拦截"画出来也是废图"的数据，质检在渲染后拦截视觉问题。
+
+**渲染前 · 逐图数据门禁**（对每张图的实际数据数组先算再画；不通过就修数据/换图型，禁止硬画）
+
+| 图型 | 检查量 | 通过条件 | 不通过的典型废图 |
+| :--- | :--- | :--- | :--- |
+| 相关矩阵/热图 | 非对角 \|r\| 最大值；行标准差均值 | ≥0.3；z-score 热图行方差 >0.2 | 近似单位阵/整片同色，聚类无意义 |
+| ROC/AUROC | max(TPR−FPR) | ≥0.15 | 曲线贴对角线（AUC≈0.5）或瞬间饱和 |
+| 分组柱状/箱线/小提琴 | 组间均值（中位数）极差 / 数据量程 | >0.05（箱线/小提琴 >0.1） | 各组等高，无对比信号 |
+| 拟合/趋势线 | (y_max−y_min)/y_mean；R² | 量程比 >0.1；R² 如实标注 | 平线无趋势；拟合优度未报 |
+| PCA/聚类投影 | 组间方差/组内方差 | >1.0 | 各组完全重叠，降维展示失败 |
+| 散点+回归 | \|Pearson r\| | ≥0.15（否则改画分布图） | 无形状点云硬配回归线 |
+| 误差棒 | SEM/均值 | <1.0 | 误差棒比测量值还大，结论不可信 |
+
+- 门禁不通过的处理顺序：**查数据与公式 → 修根因 → 仍无信号则如实换图型或如实报告"该维度无显著差异"**；禁止调模拟参数造信号、禁止挑子集凑显著（呼应第2章数据完整性与「算法误用红线」）
+- 全量数据铁律：不得为出图降采样或挑"代表性行"；大样本渲染压力用 `rasterized=True` 或密度类图解决（平行坐标等线条过密场景的 ≤60 条/类降采样是既有例外，须在图注声明）；任何删行删列必须记录数量与原因
+
+**渲染后 · 四轮质检**（每轮逐项过，FAIL 即修复重渲，最多 3 轮；3 轮未决回「选图论证」重审图型）
+
+1. **反模式扫描**：默认色板/jet/rainbow、四边框、图例压数据、纯黑、脚本内 hex 与裸字号、小样本（n<10）柱状/箱线无个体散点——命中即违反本章既有条款，直接修
+2. **代码合规**：字号全部取自 `FS_*` 且 ≥8pt；尺寸取 `FIG_*` 三档；`save_fig` 统一出口、DPI 按分级策略；矢量+位图双格式；中文标注无 mathtext 混排
+3. **视觉逻辑**：hero 面板承载核心结论且视觉权重最大；同一方法跨图同色；基准恒灰；红绿只标方向且带 ↑/↓；数值轴口径正确（性能柱状从 0 起）；统计标注自含（检验名、精确 p 值优先、误差棒类型 SD/SEM/CI、n）
+4. **渲染产物目视**（打开 PNG 逐项看，不许只看代码）：文字无重叠遮挡、面板对齐留白一致、印刷尺寸下全部文字可读、相邻颜色可区分、灰度打印仍可辨、每面板非背景像素占比在 1.5%–50%（过低=空图，过高=过度堆叠）
+
+- 质检结论记入第7章自检清单对应条目；B 级单项出图同样执行本节（不豁免）
+
 #### 推荐图表类型
 
 | 图表类型            | 适用场景           | 视觉效果  | 推荐库                 |
@@ -786,13 +846,13 @@ out = list(forecaster.predict_batch(
 | Pareto前沿图        | 多目标优化Pareto解集呈现         | ★★★★  | matplotlib          |
 | 动态演化图           | 时序仿真、迭代收敛      | ★★★★  | matplotlib / plotly |
 | 相图/矢量场图         | 动力系统稳定性分析、传染病模型相轨迹（A题必备） | ★★★★ | matplotlib（streamplot/quiver） |
-| 小提琴图+箱线图叠加      | 数据分布、多组对比      | ★★★★★ | seaborn             |
+| 小提琴图+箱线图叠加      | 数据分布、多组对比      | ★★★★★ | matplotlib（plot_templates.violin_groups，含检验与显著括号） |
 | 拟合对比图（含置信带）     | 模型拟合效果         | ★★★★  | matplotlib          |
 | 误差带图            | 置信区间、不确定性      | ★★★★  | matplotlib          |
 | 雷达图             | 多指标综合评价对比      | ★★★★  | matplotlib（plot_templates.radar） |
 | 桑基图             | 流量分配、资源流转      | ★★★★  | plotly              |
 | 联合分布图           | 多变量相关性分析       | ★★★★★ | seaborn / plotly    |
-| 脊线图（Ridge Plot） | 多组分布对比（优雅）     | ★★★★★ | matplotlib          |
+| 脊线图（Ridge Plot） | 多组分布对比（优雅）     | ★★★★★ | matplotlib（plot_templates.ridge） |
 | 双轴/组合图          | 多量纲指标同图展示（同一主题双轴可用，禁不相干图组合） | ★★★★  | matplotlib          |
 | 折线图              | 性能对比、耗时/准确率变化曲线 | ★★★★ | matplotlib          |
 | 分组柱状图            | 多方案指标对比           | ★★★★ | matplotlib          |
@@ -806,7 +866,7 @@ out = list(forecaster.predict_batch(
 | 旭日图              | 多层占比层级结构             | ★★★★ | plotly / matplotlib |
 | 3D散点/3D柱状图      | 三维特征空间分布              | ★★★★ | matplotlib          |
 | 地图热力图           | 空间地理分布                | ★★★★ | folium / geopandas  |
-| 瀑布图              | 累计增减分解                | ★★★  | matplotlib          |
+| 瀑布图              | 累计增减分解                | ★★★  | matplotlib（plot_templates.waterfall） |
 | 蜂群图/点带图        | 分布 + 个体细节              | ★★★★ | seaborn             |
 | 矩阵散点图           | 多变量两两关系               | ★★★★ | seaborn             |
 | 堆叠面积图           | 多序列占比随时间变化           | ★★★★ | matplotlib / plotly |
@@ -814,14 +874,15 @@ out = list(forecaster.predict_batch(
 | 龙卷风图            | 参数敏感性分析（单因素扰动影响排序）   | ★★★★ | matplotlib（plot_templates.tornado） |
 | 泰勒图              | 多模型综合评价（相关系数与 RMSE 同图）  | ★★★★★ | matplotlib          |
 | 云雨图（raincloud）  | 配对分布 + 个体观测 + 均值趋势          | ★★★★★ | matplotlib / seaborn |
-| 交叉验证 ROC 图       | 分类器性能与折间置信带                 | ★★★★  | scikit-learn / matplotlib |
+| 配对箱线散点图         | 前后对照/同对象两条件比较（配对连线+检验标注） | ★★★★★ | matplotlib（plot_templates.paired_box） |
+| 交叉验证 ROC 图       | 分类器性能与折间置信带                 | ★★★★  | scikit-learn / matplotlib（plot_templates.roc） |
 | SHAP 重要性组合图     | 特征重要性（柱状总览 + 蜂群细节）       | ★★★★★ | shap / matplotlib   |
 | 环形热图            | 分组周期/时段数据强度矩阵               | ★★★★  | matplotlib          |
 | 和弦图              | 实体间流量与关联结构                    | ★★★★  | matplotlib / plotly |
 | 半边小提琴 + 下三角相关矩阵 | 分组分布对比与两两相关一图打尽    | ★★★★  | matplotlib / seaborn |
-| 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | seaborn / matplotlib |
+| 预测-真实值边缘分布组合图 | 回归诊断（散点 + 两侧边际分布）      | ★★★★  | matplotlib（plot_templates.scatter_marginal） |
 
-> **本章图表指引分三层，按需取用**：①「简单图型一次调用模块」+「高频图表代码模板」——热力图/Pareto/龙卷风/雷达/甘特调 `plot_templates` 函数，三维曲面/拟合+残差/迭代收敛给可跑代码；②「高级图表配色要点」——进阶图型（散点/气泡、桑基/和弦、地图热力、平行坐标）只给配色规则；③「基础图型绘制规范」——折线/柱状/箱线/环形/条形只给规则，代码现场生成。三层与本章「强制要求」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。未内置的进阶图型：若已安装 `mathmodel-figure` 技能可套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
+> **本章图表指引分三层，按需取用**：①「简单图型一次调用模块」+「高频图表代码模板」——热力图/Pareto/龙卷风/雷达/甘特/ROC/脊线图/配对箱线散点/边际密度散点/瀑布图/分组小提琴调 `plot_templates` 函数，三维曲面/拟合+残差/迭代收敛给可跑代码；②「高级图表配色要点」——进阶图型（散点/气泡、桑基/和弦、地图热力、平行坐标）只给配色规则；③「基础图型绘制规范」——折线/柱状/箱线/环形/条形只给规则，代码现场生成。三层与本章「强制要求」「选图论证与反冗余审计」「渲染前数据门禁与出图后质检」共同构成出图判据的**唯一权威出处**，不再另设清单；论文成稿阶段按第7章"论文质量自检清单"图表类条目复核。未内置的进阶图型：若已安装 `mathmodel-figure` 技能可套其同名模板（自带确定性模拟数据、PNG/PDF/SVG 三格式），否则按本章规范现绘，样式一律取自 `plot_style.py`。
 
 #### 图型创新与跨图统一（图库不是边界）
 
@@ -936,6 +997,7 @@ save_fig(fig, '../figures/final/figN_custom_explore.png', vector=True)
 
 - **主色一致**：全文所有图表主色统一——图1 用主角蓝代表"模型A"，图5 中"模型A"必须仍是主角蓝（`identity_color(0)` 恒为主角蓝，跨图图例一致）
 - **图内文字语言**：用户未明确说明时，图中标题、坐标轴标签、图例、colorbar 标签、注解**一律中文**（专业术语用「中文（缩写）」形式，如「决定系数（R²）」「均方根误差（RMSE）」，单位用国际符号 cm/kg/℃）；仅当明确要求全英文时才整体改用英文。同一篇论文内所有图表语言必须统一，禁止中英混排（如中文标题配英文图例）
+- **英文赛标注细则（MCM/ICM 或用户要求全英文时强制）**：轴标签用「Quantity (unit)」句式（如 Response time (s)）；图题写结论不写过程（如 Proposed model reduces latency by 18%）；统计标注英文化（Paired t-test, p = 0.032；mean ± SD；n = 14）；术语首现给全称+缩写（root mean square error (RMSE)）；英文标签更长，长轴标签旋转 30–45° 或换行、图例优先移图外，出图后按第4章四轮质检目视防溢出；半栏并排小图用 `FIG_HALF`，创建即定尺寸、禁画大图再缩小，字号仍取 `FS_*`
 - **禁 mathtext 与中文混排**：`"问题规模 $n$（个）"` 这类写法会让中文退化成方框（mathtext 段不做字体回退）；要么写纯文本 `"问题规模 n（个）"`，要么整串都用公式
 - **字体与字号**：西文/数字 Arial（缺则 Helvetica/Liberation Sans，最终兜底 DejaVu Sans），中文 Microsoft YaHei → SimHei → Noto Sans CJK SC；字号一律取 `FS_TITLE/FS_LABEL/FS_TICK/FS_LEGEND/FS_ANNOT`（8–10.5pt，比正文略小但清晰），禁逐脚本手写
 - **坐标框架**：一律调用 `style_axes(ax, grid='y')`（横向条形 `grid='x'`、散点可 `both`、等高线可 `None`；热图例外需四边闭合），禁止在各脚本里重复手写 spine/网格/刻度设置
@@ -992,12 +1054,12 @@ FILL_ALPHA = 0.15          # 置信带/填充一律淡，不遮数据
 HATCH_SEQUENCE = ('', '---', '|||')   # 可选纹理：无/横线/竖线（基础图表不默认斜线圆点）
 SEED = 42                  # 全局随机种子（唯一出处，见阶段四「可复现性」；一切含随机性的脚本引用它）
 
-# ===== 色图（与身份色同族，保证跨图色彩一致） =====
+# ===== 色卡精修（借鉴 CNS 蓝白红发散系，职责不变）：发散中点近白，零点更干净、黑白打印明度对称 =====
 DIVERGENT_CMAP = LinearSegmentedColormap.from_list(
-    'academic_div', [(0.0, COLOR_MAIN), (0.5, NEUTRAL_BG), (1.0, ACCENT_CORAL)])  # 负蓝→浅灰→珊红
+    'academic_div', [(0.0, COLOR_MAIN), (0.5, '#F7F7F7'), (1.0, ACCENT_CORAL)])  # 负蓝→近白→珊红
 SURFACE_CMAP = DIVERGENT_CMAP                        # 发散型曲面/矩阵沿用同一色图
-SEQUENTIAL_CMAP = LinearSegmentedColormap.from_list(  # 单极数据与黑白打印变体
-    'academic_seq', [(0.0, '#F2F5FA'), (1.0, COLOR_MAIN)])
+SEQUENTIAL_CMAP = LinearSegmentedColormap.from_list(  # 单极数据与黑白打印变体（三段蓝，低值段层次更清）
+    'academic_seq', [(0.0, '#F7FBFF'), (0.55, COLOR_MAIN_LIGHT), (1.0, COLOR_MAIN)])
 
 # ===== 字号与线宽（Nature 版式：小字、细线、多留白） =====
 FS_TITLE, FS_LABEL, FS_TICK, FS_LEGEND, FS_ANNOT, FS_PANEL = 10.5, 9.5, 8.5, 8.5, 8.0, 12.0
@@ -1008,6 +1070,7 @@ GRID_LINESTYLE = (0, (4, 3))   # 浅灰细虚线，只保留数值轴方向
 FIG_FULL = (6.3, 4.0)     # 整版宽图（折线、柱状、条形）
 FIG_TALL = (6.3, 5.5)     # 双子图竖版（拟合+残差等）
 FIG_SQUARE = (5.6, 4.6)   # 近方形（热图、环图、散点方阵、等高线）
+FIG_HALF = (3.1, 2.6)     # 半栏紧凑图（美赛英文赛并排双图/小证据图；字号仍取 FS_*，禁再缩）
 
 # ===== 字体检测回退（按安装情况过滤字体栈，缺字体环境避免静默方框与 findfont 刷屏） =====
 _INSTALLED_FONTS = {f.name for f in font_manager.fontManager.ttflist}
@@ -1155,7 +1218,7 @@ apply_style()   # import 即完成一次性初始化
 
 #### 简单图型一次调用模块（code/plot_templates.py）
 
-> 简单图型不再现场手写：热力图 / Pareto / 龙卷风 / 雷达 / 甘特一律调用本模块函数（样式契约与数据图相同：禁 hex、禁裸字号、中文标注、`save_fig` 统一出口）。复杂图型仍用下方「高频图表代码模板」。
+> 简单图型不再现场手写：热力图 / Pareto / 龙卷风 / 雷达 / 甘特 / ROC / 脊线图 / 配对箱线散点 / 边际密度散点 / 瀑布图 / 分组小提琴一律调用本模块函数（样式契约与数据图相同：禁 hex、禁裸字号、中文标注、`save_fig` 统一出口）。复杂图型仍用下方「高频图表代码模板」。ROC/脊线图/配对箱线/边际密度/分组小提琴继承自 academic-figure-skill（Apache-2.0）生产脚本的视觉参数与统计逻辑（层叠比例、抖动幅度、地毯线、显著性括号防重叠、Bonferroni 校正等照抄，配色字号换算到本模块契约）；ROC 另支持 CV 折间 ±1σ 置信带（上游无此能力），已在本机 Python 环境实测出图通过。
 
 ```python
 # code/plot_templates.py —— 简单图型一次调用模块（样式全部取自 plot_style，禁 hex 与裸字号）
@@ -1267,6 +1330,295 @@ def gantt(tasks, path, critical=(), xlabel='时间', title='任务排程甘特�
     ax.set_title(title, fontsize=FS_TITLE)
     style_axes(ax, grid='x')
     save_fig(fig, path, vector=True)
+
+# ===== 以下四模板继承自 academic-figure-skill（Apache-2.0）生产脚本的视觉参数，
+#       配色/字号已换算到本模块契约；新增 import 见文件头部说明 =====
+from scipy import stats
+from plot_style import (COLOR_MAIN_LIGHT, COLOR_NEGATIVE, COLOR_POSITIVE,
+                        FILL_ALPHA, FIG_TALL, FS_LEGEND, NEUTRAL_MID, SEED,
+                        TONE_RAMP, tint)
+
+def roc(curves, path, xlabel='假正率（FPR）', ylabel='真正率（TPR）',
+        title='分类模型 ROC 对比'):
+    """多模型 ROC：curves={名称: (fpr, tpr)} 或 {名称: [(fpr,tpr), ...折]}。
+    传多折时画均值曲线 + 折间 ±1σ 置信带（同色 FILL_ALPHA 填充），图例 AUC 为均值；
+    首条目为本文模型（主角蓝加粗）；曲线自动补 (0,0)/(1,1) 端点；
+    对角参考线恒灰虚线；无网格正方形画布。
+    门禁：任一曲线 max(tpr-fpr) < 0.15 时告警（贴对角线无区分度）。"""
+    grid = np.linspace(0, 1, 200)
+    fig, ax = plt.subplots(figsize=FIG_SQUARE)
+    for i, (name, val) in enumerate(curves.items()):
+        folds = val if isinstance(val, list) else [val]
+        interp = []
+        for fpr, tpr in folds:
+            fpr, tpr = np.asarray(fpr, float), np.asarray(tpr, float)
+            m = np.isfinite(fpr) & np.isfinite(tpr)      # 先滤非有限值再排序补端点
+            order = np.argsort(fpr[m])
+            f, t = fpr[m][order], tpr[m][order]
+            f = np.r_[0, f, 1]; t = np.r_[0, t, 1]       # 补端点，AUC 口径完整
+            interp.append(np.interp(grid, f, t))
+        interp = np.asarray(interp)
+        t_mean = interp.mean(axis=0)
+        auc = np.trapezoid(t_mean, grid) if hasattr(np, 'trapezoid') else np.trapz(t_mean, grid)
+        if np.max(t_mean - grid) < 0.15:
+            print(f'[数据门禁·警告] {name} 曲线分离度 {np.max(t_mean - grid):.3f} < 0.15，区分度不足')
+        c = identity_color(i)
+        if len(interp) > 1:                             # CV 折间 ±1σ 带（上游三版均无此能力）
+            sd = interp.std(axis=0)
+            ax.fill_between(grid, np.clip(t_mean - sd, 0, 1),
+                            np.clip(t_mean + sd, 0, 1), color=c, alpha=FILL_ALPHA,
+                            zorder=2)
+        ax.plot(grid, t_mean, color=c, linewidth=2.2 if i == 0 else 1.6,
+                label=f'{name}（AUC={auc:.3f}）', zorder=4 - i * 0.1)
+    ax.plot([0, 1], [0, 1], color=COLOR_BASELINE, linestyle='--', linewidth=1.0,
+            zorder=1)                                   # 随机猜测参考线：恒灰
+    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid=None)                           # ROC 无网格
+    ax.legend(frameon=False, loc='lower right', fontsize=FS_LEGEND)
+    save_fig(fig, path, vector=True)
+
+def ridge(groups, path, xlabel='数值', title='多组分布脊线图',
+          scale=0.82, bw_adjust=1.0, rug=True):
+    """山脊图：groups={组名: 观测数组}，按传入顺序自上而下层叠，首组为主组（主角蓝）。
+    层叠比例 0.82、基线灰虚线、个体地毯线全量呈现、组旁 n 标注；
+    填充身份色 α0.92、描边深墨细线；bw_adjust 调核密度带宽（1=Scott 规则）。"""
+    names = list(groups)
+    k = len(names)
+    fig, ax = plt.subplots(figsize=(FIG_FULL[0], max(FIG_FULL[1], 0.62 * k + 1.2)))
+    allv = np.concatenate([np.asarray(v, float) for v in groups.values()])
+    xlo, xhi = allv.min(), allv.max()
+    pad = (xhi - xlo) * 0.12
+    xs = np.linspace(xlo - pad, xhi + pad, 400)
+    for i, name in enumerate(names):
+        v = np.asarray(groups[name], float)
+        v = v[np.isfinite(v)]
+        y0 = k - 1 - i                                  # 首组置顶
+        bw = None if bw_adjust == 1.0 else bw_adjust * stats.gaussian_kde(v).factor
+        dens = stats.gaussian_kde(v, bw_method=bw)(xs)
+        dens = dens / dens.max() * scale                # 峰高归一到层叠比例
+        c = identity_color(i)
+        ax.axhline(y0, color=NEUTRAL_LIGHT, linewidth=0.65, linestyle='--', zorder=1)
+        ax.fill_between(xs, y0, y0 + dens, color=c, alpha=0.92, zorder=2 + i * 0.01)
+        ax.plot(xs, y0 + dens, color=COLOR_INK, linewidth=0.9, zorder=3 + i * 0.01)
+        if rug:                                         # 个体观测地毯线（全量，不降采样）
+            ax.vlines(v, y0 - 0.10, y0 + 0.10, color=COLOR_INK,
+                      linewidth=0.22, alpha=0.85, zorder=4 + i * 0.01)
+        ax.text(xlo - pad * 0.9, y0 + scale * 0.55, f'n = {len(v)}',
+                fontsize=FS_ANNOT, color=NEUTRAL_DARK, ha='left', va='center')
+    ax.set_yticks(range(k))
+    ax.set_yticklabels(names[::-1], fontsize=FS_TICK)
+    ax.set_ylim(-0.45, k - 1 + scale + 0.25)
+    ax.set_xlim(xlo - pad, xhi + pad)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid=None)
+    ax.spines['left'].set_visible(False)                # 组名即定位，左轴是噪声
+    ax.tick_params(axis='y', length=0)
+    save_fig(fig, path, vector=True)
+
+def paired_box(before, after, path, labels=('前', '后'), ylabel='指标值',
+               title='配对前后对比', test='auto'):
+    """配对箱线散点：同对象两条件，个体灰连线 + 浅同族填充箱体 + 全量抖动点 +
+    顶部显著性括号与精确 p 值（检验名自含）。before/after 等长按对象对齐。
+    test='auto'：差值近正态（n≥8 且 Shapiro p>0.05）用配对 t 检验，否则 Wilcoxon。
+    返回统计摘要 dict（检验名/p/n/两组均值），供正文与统计报告引用。"""
+    before, after = np.asarray(before, float), np.asarray(after, float)
+    assert before.shape == after.shape and before.ndim == 1, '配对数据须等长一维'
+    d = after - before
+    if test == 'auto':
+        normal = stats.shapiro(d).pvalue > 0.05 if len(d) >= 8 else False
+        test = 't' if normal else 'wilcoxon'
+    if test == 't':
+        p = stats.ttest_rel(before, after).pvalue
+        test_name = '配对 t 检验'
+    else:
+        p = stats.wilcoxon(before, after).pvalue
+        test_name = 'Wilcoxon 符号秩检验'
+    p_txt = 'p < 0.001' if p < 0.001 else f'p = {p:.3f}'
+    rng = np.random.default_rng(SEED)
+    jit = rng.uniform(-0.055, 0.055, len(before))       # 抖动幅度 ≤ 组距 12%
+    fig, ax = plt.subplots(figsize=(FIG_TALL[0] * 0.62, FIG_TALL[1]))
+    colors = (identity_color(0), identity_color(1))
+    bp = ax.boxplot((before, after), positions=(1, 2), widths=0.48, patch_artist=True,
+                    showfliers=False,                   # 离群点由全量散点承担
+                    medianprops=dict(color=COLOR_INK, linewidth=2.2),
+                    boxprops=dict(linewidth=0.8), whiskerprops=dict(linewidth=0.8),
+                    capprops=dict(linewidth=0.8))
+    for patch, c in zip(bp['boxes'], colors):
+        patch.set_facecolor(tint(c, 0.82))              # 浅同族填充，白底感
+        patch.set_edgecolor(COLOR_INK)
+    x_pair = np.column_stack([1 + jit, 2 + jit])        # 配对连线一次性画（禁重复叠线）
+    ax.plot(x_pair.T, np.column_stack([before, after]).T,
+            color=NEUTRAL_MID, linewidth=0.45, alpha=0.75, zorder=2)
+    for j, (v, c) in enumerate(zip((before, after), colors)):
+        ax.scatter(j + 1 + jit, v, s=22, color=c, alpha=0.95, edgecolors='white',
+                   linewidths=0.4, zorder=4)
+    lo = min(before.min(), after.min()); hi = max(before.max(), after.max())
+    span = hi - lo
+    bar_y = hi + span * 0.18
+    ax.plot([1, 1, 2, 2], [bar_y - span * 0.03, bar_y, bar_y, bar_y - span * 0.03],
+            color=COLOR_INK, linewidth=0.65)
+    ax.text(1.5, bar_y + span * 0.02, f'{test_name}，{p_txt}', ha='center',
+            va='bottom', fontsize=FS_ANNOT, color=COLOR_INK)
+    ax.set_xticks((1, 2)); ax.set_xticklabels(labels)
+    ax.set_xlim(0.5, 2.5)
+    ax.set_ylim(lo - span * 0.12, bar_y + span * 0.22)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='y')
+    save_fig(fig, path, vector=True)
+    return {'test': test_name, 'p': float(p), 'n': len(before),
+            'mean_before': float(before.mean()), 'mean_after': float(after.mean())}
+
+def scatter_marginal(x, y, path, groups=None, xlabel='变量 X', ylabel='变量 Y',
+                     title='两变量关系与边际分布', fit=True):
+    """散点+两侧边际密度（回归诊断/相关性论证）：主图散点 α0.5、可选线性拟合
+    （主角蓝虚线 + r/p 标注），上/右边缘按组核密度填充；groups 为分组标签数组。
+    门禁：|Pearson r| < 0.15 时告警建议改画分布图；组内 n<5 不画 KDE（防假分布）。
+    返回 {'r','p','n'} 供正文引用。"""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    m = np.isfinite(x) & np.isfinite(y)
+    x, y = x[m], y[m]
+    r, p_r = stats.pearsonr(x, y)
+    if abs(r) < 0.15:
+        print(f'[数据门禁·警告] |r|={abs(r):.3f} < 0.15，线性关系弱，建议改画分布图')
+    fig = plt.figure(figsize=FIG_SQUARE)
+    gs = fig.add_gridspec(2, 2, width_ratios=(4, 1), height_ratios=(1, 4),
+                          wspace=0.06, hspace=0.06)
+    ax = fig.add_subplot(gs[1, 0])
+    axx = fig.add_subplot(gs[0, 0], sharex=ax)
+    axy = fig.add_subplot(gs[1, 1], sharey=ax)
+    if groups is None:
+        groups = np.full(len(x), '全部样本')
+    names = list(dict.fromkeys(groups))
+    xs = np.linspace(x.min(), x.max(), 300)
+    ys = np.linspace(y.min(), y.max(), 300)
+    for i, name in enumerate(names):
+        sel = groups == name
+        c = identity_color(i)
+        n_i = int(sel.sum())
+        ax.scatter(x[sel], y[sel], s=20, color=c, alpha=0.5, edgecolors='none',
+                   label=f'{name}（n={n_i}）', zorder=3)
+        if n_i >= 5:                                    # 样本过少不画 KDE
+            dx = stats.gaussian_kde(x[sel])(xs)
+            dy = stats.gaussian_kde(y[sel])(ys)
+            axx.fill_between(xs, dx, color=c, alpha=FILL_ALPHA * 2, zorder=2)
+            axx.plot(xs, dx, color=c, linewidth=1.0, zorder=3)
+            axy.fill_betweenx(ys, dy, color=c, alpha=FILL_ALPHA * 2, zorder=2)
+            axy.plot(dy, ys, color=c, linewidth=1.0, zorder=3)
+    if fit:
+        k, b = np.polyfit(x, y, 1)
+        ax.plot(xs, k * xs + b, color=COLOR_MAIN, linestyle='--', linewidth=1.4,
+                zorder=5)
+        ax.text(0.03, 0.97, f'r = {r:.3f}，p = {p_r:.3g}', transform=ax.transAxes,
+                fontsize=FS_ANNOT, color=NEUTRAL_DARK, va='top')
+    ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
+    style_axes(ax, grid='both')
+    for a in (axx, axy):
+        a.set_xticks([]); a.set_yticks([])
+        for s in a.spines.values():
+            s.set_visible(False)
+    axx.set_title(title, fontsize=FS_TITLE)
+    if len(names) > 1:
+        ax.legend(frameon=False, loc='best', fontsize=FS_LEGEND)
+    save_fig(fig, path, vector=True)
+    return {'r': float(r), 'p': float(p_r), 'n': len(x)}
+
+def waterfall(labels, deltas, path, start=0.0, start_label='期初', end_label='合计',
+              ylabel='数值', title='累计增减分解（瀑布图）'):
+    """瀑布图：labels/deltas 为各环节名称与增减量，start 为期初值。
+    增绿降红只表方向（方向色职责，带 +/− 号冗余编码）；期初/合计走 TONE_RAMP 深浅；
+    环节间灰虚线连接累计位；柱端标注带符号数值。返回 {'start','end','total_delta'}。"""
+    labels, deltas = list(labels), np.asarray(deltas, float)
+    assert len(labels) == len(deltas), '名称与增减量须等长'
+    cum = np.r_[start, start + np.cumsum(deltas)]       # 各环节起止累计位
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    xs = np.arange(len(deltas) + 2)
+    ax.bar(0, start, width=0.6, color=TONE_RAMP[0], edgecolor='white', linewidth=0.8)
+    ax.text(0, start, f'{start:g}', ha='center', va='bottom',
+            fontsize=FS_ANNOT, color=NEUTRAL_DARK)
+    for i, d in enumerate(deltas):
+        c = COLOR_POSITIVE if d >= 0 else COLOR_NEGATIVE
+        bottom = min(cum[i], cum[i + 1])
+        ax.bar(i + 1, abs(d), bottom=bottom, width=0.6, color=c,
+               edgecolor='white', linewidth=0.8)
+        top = max(cum[i], cum[i + 1])
+        ax.text(i + 1, top, f'{d:+g}', ha='center', va='bottom',
+                fontsize=FS_ANNOT, color=NEUTRAL_DARK)
+        ax.plot([i + 0.3, i + 1.7], [cum[i + 1], cum[i + 1]],
+                color=COLOR_BASELINE, linewidth=0.6, linestyle='--', zorder=1)
+    ax.bar(len(deltas) + 1, cum[-1], width=0.6, color=TONE_RAMP[2],
+           edgecolor='white', linewidth=0.8)
+    ax.text(len(deltas) + 1, cum[-1], f'{cum[-1]:g}', ha='center', va='bottom',
+            fontsize=FS_ANNOT, color=NEUTRAL_DARK)
+    ax.set_xticks(xs)
+    ax.set_xticklabels([start_label] + labels + [end_label], fontsize=FS_TICK)
+    lo = min(0, cum.min()); hi = cum.max()
+    ax.set_ylim(lo - (hi - lo) * 0.05, hi + (hi - lo) * 0.12)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='y')
+    save_fig(fig, path, vector=True)
+    return {'start': float(start), 'end': float(cum[-1]),
+            'total_delta': float(deltas.sum())}
+
+def violin_groups(groups, path, ylabel='数值', title='多组分布对比（小提琴+散点）',
+                  pairs='auto', alpha=0.05):
+    """分组小提琴：groups={组名: 观测数组}，首组主角蓝。白底浅填箱体口径的小提琴版：
+    身份色浅填 α0.5 + 深墨描边 + 全量抖动散点（seed 统一、jitter_sd=0.06）；
+    组间 Mann-Whitney U 双侧检验 + Bonferroni 校正，仅显著对画括号（精确 p 值，
+    括号自动抬升防重叠——吸收自上游 GroupedViolin）。pairs='auto' 为全部两两组合，
+    或传 [(组名1, 组名2), ...]。返回检验摘要列表供正文引用。"""
+    names = list(groups)
+    data = [np.asarray(groups[k], float)[np.isfinite(groups[k])] for k in names]
+    if pairs == 'auto':
+        from itertools import combinations
+        pairs = list(combinations(range(len(names)), 2))
+    else:
+        pairs = [(names.index(a), names.index(b)) for a, b in pairs]
+    results = []
+    for i, j in pairs:
+        p_raw = stats.mannwhitneyu(data[i], data[j], alternative='two-sided').pvalue
+        p_adj = min(p_raw * len(pairs), 1.0)            # Bonferroni
+        results.append({'pair': (names[i], names[j]), 'p_raw': float(p_raw),
+                        'p_adj': float(p_adj)})
+    sig = [r for r in results if r['p_adj'] < alpha]
+    rng = np.random.default_rng(SEED)
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    vp = ax.violinplot(data, positions=np.arange(len(names)), widths=0.85,
+                       showmedians=True, showextrema=False)
+    for k, body in enumerate(vp['bodies']):
+        body.set_facecolor(tint(identity_color(k), 0.55))
+        body.set_edgecolor(COLOR_INK); body.set_linewidth(0.8); body.set_alpha(0.9)
+    vp['cmedians'].set_color(COLOR_INK); vp['cmedians'].set_linewidth(2.2)
+    for k, v in enumerate(data):
+        ax.scatter(k + rng.normal(0, 0.06, len(v)), v, s=10, alpha=0.6,
+                   color=identity_color(k), edgecolors='white', linewidths=0.3,
+                   zorder=4)
+    allv = np.concatenate(data)
+    lo, hi = allv.min(), allv.max()
+    span = hi - lo
+    step = span * 0.09
+    level = hi + span * 0.10
+    for r in sig:                                       # 显著对括号：跨度小者先画，防重叠抬升
+        i, j = names.index(r['pair'][0]), names.index(r['pair'][1])
+        ax.plot([i, i, j, j], [level - step * 0.3, level, level, level - step * 0.3],
+                color=COLOR_INK, linewidth=0.65)
+        p = r['p_adj']
+        p_txt = 'p < 0.001' if p < 0.001 else f'p = {p:.3f}'
+        ax.text((i + j) / 2, level + step * 0.1, p_txt, ha='center', va='bottom',
+                fontsize=FS_ANNOT, color=COLOR_INK)
+        level += step * 1.6
+    ax.set_xticks(np.arange(len(names)))
+    ax.set_xticklabels(names, fontsize=FS_TICK)
+    ax.set_ylim(lo - span * 0.08, level + step * 0.5)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=FS_TITLE)
+    style_axes(ax, grid='y')
+    save_fig(fig, path, vector=True)
+    return results
 ```
 
 #### 高频图表代码模板
@@ -2297,6 +2649,11 @@ Google Scholar **不作为必需入口**：无公开 API 且对自动访问拦�
 - 基准/参照线为灰色（`COLOR_BASELINE`），方向色（红/绿）只出现在有正负的变化量上且同时带 `↑/↓` 或正负号
 - 同一方法在全文各图颜色一致（按画图前登记的方法-颜色对照取色，模板图与现绘图同色）
 - 灰度打印下各系列仍可区分（不得仅靠红绿区分系列；主次层级由 `TONE_RAMP` 明度承担）
+- 每问图表合同已立：核心结论一句话可写、逐图有独立子问题与数据依据（第4章「选图论证与反冗余审计」）
+- 反冗余审计通过：无同数据两画法、无子集重复、无可互相推导的图对；多子图有唯一 hero 面板且承载核心结论
+- 跨小问无重复图：figures/final/ 逐对目视比对，同数据同画法只保留首次出现，后文回指或换视角并注明差异（第4章「跨小问去重」）
+- 渲染前数据门禁逐图通过（相关强度/曲线分离度/组间差异等，判据见第4章「渲染前数据门禁与出图后质检」）；无信号维度如实报告，未调参造信号
+- 出图后四轮质检完成且 FAIL 项已修复重渲；统计标注自含（检验名、p 值口径、误差棒类型、n）
 
 #### [中等] 正文语言表述
 
