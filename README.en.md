@@ -1,12 +1,14 @@
 <div align="center">
 
+![Math Modeling Helper](assets/banner.en.png)
+
 # Math Modeling Helper
 
-**数学建模竞赛辅助技能 · V3.2.0**
+**Math modeling contest assistant · V3.3.0**
 
 Problem analysis · Algorithm selection · Code implementation · Paper polishing — an end-to-end AI modeling skill from problem input to final paper
 
-![Version](https://img.shields.io/badge/version-V3.2.0-2563eb)
+![Version](https://img.shields.io/badge/version-V3.3.0-2563eb)
 ![License](https://img.shields.io/github/license/Escap1ng/math-modeling-skill?color=16a34a)
 ![Stars](https://img.shields.io/github/stars/Escap1ng/math-modeling-skill?color=f59e0b)
 ![Last Commit](https://img.shields.io/github/last-commit/Escap1ng/math-modeling-skill?color=0ea5e9)
@@ -77,6 +79,8 @@ Need only one part? State the scope and it runs as a single service — no works
 ---
 
 ## Workflow
+
+![Eight-stage closed-loop workflow](assets/workflow.en.png)
 
 Classify before executing: **Tier A · full modeling** (default, from problem input to final paper) runs the eight stages below (Stages 0–7); **Tier B · single service** (algorithm advice / per-question code / paper polishing) runs only the matching subset — no forced full environment check, workspace setup, or paper scoring (rules and subsets: see the "工作流分级" section in SKILL.md).
 
@@ -198,12 +202,19 @@ The library answers *what is available*; the three disciplines below answer *wha
 
 ## Visualization Standards
 
+![Four gates per figure](assets/gates.en.png)
+
+![Built-in template gallery](assets/gallery.en.png)
+
+- **Problem-driven figure choice** — before drawing, write the chart contract (one-sentence key finding + per-figure evidence chain + hero panel priority), then run the anti-redundancy audit (same data drawn twice / subset duplication / mutually derivable → merge); figure count follows the number of independent sub-questions; method internalized from academic-figure-skill (Apache-2.0)
+- **Data gates & four-round QA** — before rendering, check signal strength per figure (correlation ≥ 0.3, ROC separation ≥ 0.15, group difference, etc.); below the gate, no forced plot. After rendering, run anti-pattern scan → code compliance → visual logic → rendered review; FAIL → fix and re-render
 - **Publication quality** — ≥300 DPI (200 allowed for density plots); vector PDF preferred for line / bar charts
 - **Nature three-role color** — color carries exactly three duties: identity (hero blue first), direction (red/green only for signed change, always with ↑/↓), hierarchy (`TONE_RAMP` lightness); baselines stay grey; jet / rainbow / pure black / hard-coded hex banned; legible in grayscale
 - **Figure count** — at least one color figure per sub-question; 6+ recommended for the whole paper (minimum 4); a problem-analysis flowchart / technical-route diagram is mandatory in chapter two
 - **Unified style module** — palette, colormaps, hatches, three standard sizes, the font scale, and style helpers (`style_axes` / `annotate_bars` / `delta_annotation`) defined once in `plot_style.py`; preview figures match final quality
 - **The library is not the boundary** — figure type follows the data and the conclusion being argued; drawing beyond the templates is encouraged, while style stays fixed: one shared set of constants plus a pre-registered method→color map for cross-figure consistency
-- **Built-in templates** — 3D surface (fixed box aspect + standalone colorbar), fit comparison (confidence band + residual subplot), convergence curve, problem-analysis flowchart (content-driven, auto orthogonal routing, native arrow patches, text-fit gate); five simple types (heatmap, Pareto front, tornado, radar, Gantt) ship as one-call `plot_templates.py` functions; advanced types (Taylor diagram, raincloud, cross-validated ROC, SHAP combo) can reuse the matching `mathmodel-figure` templates as a supplement
+- **English-contest ready** — MCM/ICM annotation rules built in (Quantity (unit) axis labels, conclusion-style titles, English statistics annotations, long-label overflow control); `FIG_HALF` for compact side-by-side panels; palette refined (near-white divergent midpoint, three-segment blue sequential) so grayscale print keeps its layers
+- **Built-in templates** — complex types: 3D surface (fixed box aspect + standalone colorbar), fit comparison (confidence band + residual subplot), convergence curve, problem-analysis flowchart (content-driven, auto orthogonal routing, native arrow patches, text-fit gate); eleven simple types ship as one-call `plot_templates.py` functions — heatmap, Pareto front, tornado, radar, Gantt, ROC (CV fold ±1σ band), ridge, paired box (auto test + exact p), marginal-density scatter, waterfall, grouped violin (Mann–Whitney + Bonferroni + bracket anti-overlap); five inherit the academic-figure-skill production parameters and statistical logic, plot-tested; advanced types (Taylor diagram, raincloud, SHAP combo) can reuse the matching `mathmodel-figure` templates as a supplement
 
 ---
 
@@ -244,13 +255,34 @@ Problem_X_short_name/
 | `SKILL.md` | Skill core: tiered workflow and eight stages (0–7), algorithm library with misuse red lines, baseline and compute-budget rules, code templates, paper-writing & body-language standards, visualization & layout standards, web research & reference verification, quality checklist, and 0–100 scoring system |
 | `README.md` | Chinese documentation |
 | `README.en.md` | English documentation (this file) |
+| `assets/` | README images: banner, eight-stage workflow, four-gate explainer, template gallery (generated with the skill's style module; `.en` variants for this file) |
 | `LICENSE` | MIT License |
 
 ---
 
 ## Changelog
 
-### V3.2.0
+<details>
+<summary><b>V3.3.0</b> (current · click to expand)</summary>
+
+**Added (merging academic-figure-skill, Apache-2.0 — methods internalized + curated templates)**
+
+- **Figure-argument & anti-redundancy audit**: a chart contract is mandatory before drawing (one-sentence key finding / per-figure evidence chain / hero panel priority), five redundancy traps are scanned pairwise, and figure count follows the number of independent sub-questions; template Copy-First — on a hit, copy the whole block and change only the data entry; external figure types inherit hard / proportional / logical parameters, with colors always remapped to this skill's semantic palette
+- **Pre-render data gates**: signal-strength thresholds for seven figure types (correlation ≥ 0.3, ROC separation ≥ 0.15, group difference > 0.05, etc.); failures mean fixing the root cause or reporting honestly — never tuning to manufacture signal; full-data rule (rasterize for render pressure, never downsample)
+- **Four-round post-render QA**: anti-pattern scan → code compliance → visual logic → rendered review (including panel ink density 1.5%–50%); FAIL → fix and re-render, at most 3 rounds
+- **Four high-frequency contest templates**: `plot_templates.py` adds ROC (AUC computed into the legend + gate warning), ridge (ggridges stacking + full rug + n labels), paired box (individual pairing lines + automatic test choice + exact-p bracket, returns a stats summary), and marginal-density scatter (grouped KDE + r/p annotation, returns a correlation summary); visual parameters inherited from the upstream production scripts, colors and font sizes mapped to the `plot_style.py` contract, plot-tested
+- Five new figure checks in the quality checklist; the Stage 4 figure flow now enforces "contract → gate → QA"
+
+- **Contest-focused refinements (kept lean)**: palette update — the divergent midpoint moves from light grey to near white (cleaner zero point, symmetric lightness in grayscale) and the sequential map becomes three-segment blue (clearer low-value layers); new `FIG_HALF` compact half-column size and English-contest annotation rules (MCM / all-English: Quantity (unit) axis labels, conclusion-style titles, English statistics annotations, long-label overflow control); anti-redundancy upgraded to cross-question deduplication (same data + same drawing kept once, pairwise visual comparison before delivery); new `waterfall` template (cumulative cost/benefit decomposition, signed-band coloring with +/− redundant encoding)
+- **README visual upgrade**: four new `assets/` images (banner led by the four capability cards, eight-stage closed-loop workflow, four-gate explainer, six-panel template gallery), all generated with the skill's own style module — the same visual system as the output figures
+- **Overlapping templates compared and chosen**: ten overlapping figure types compared one by one with the upstream repository — radar / heatmap / grouped bar / trend line keep this skill's versions (the upstream versions have hard-coded p values, overlapping bars, a LaTeX dependency, and no Chinese support); the upstream Sankey script cannot run (missing self-made dependency) and was not adopted; ROC is enhanced with a CV fold mean ±1σ band and automatic curve endpoints (absent from all three upstream versions); new grouped violin `violin_groups` (adopts upstream Mann–Whitney + Bonferroni correction and bracket anti-overlap lifting, with a unified scatter seed)
+
+> **Scope note**: this release adopts the upstream figure-selection workflow and selected drawing methods, all chosen for contest scenarios; journal column widths and submission-only palettes were not imported; the English annotation rules and palette refinements serve MCM-type contests; contest layout and the Nature three-role palette remain the single source of truth.
+
+</details>
+
+<details>
+<summary><b>V3.2.0</b></summary>
 
 **Added**
 
@@ -277,9 +309,14 @@ Problem_X_short_name/
 
 > **Behavior changes**: Word fonts and table alignment moved from *violating the skill's own spec* to compliant; the random seed is unified; Stage 7 adds a final gate. These are gap-filling and tightening, not feature removal. TimesFM 3.0 weights are non-commercial (contests qualify); commercial use requires the 2.5 weights or the official licensed service.
 
-### V3.1.0
+</details>
+
+<details>
+<summary><b>V3.1.0</b></summary>
 
 First public release: seven-stage pipeline, dual-format paper delivery, Nature three-role visualization standard, CUMCM award-level layout, and the five-dimension 0–100 scoring system.
+
+</details>
 
 ---
 
